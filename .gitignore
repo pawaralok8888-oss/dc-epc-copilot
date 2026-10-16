@@ -1,0 +1,16 @@
+# Secrets - NEVER commit these
+.env
+.streamlit/secrets.toml
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local databases and OS files
+*.db
+*.sqlite
+.DS_Store
+
+# NOTE: data/cache/ is committed on purpose so the demo runs without the API

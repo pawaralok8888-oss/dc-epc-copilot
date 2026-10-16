@@ -1,0 +1,14 @@
+anthropic
+pydantic
+python-dotenv
+pymupdf
+networkx
+numpy
+pandas
+faker
+pillow
+streamlit
+pyvis
+openpyxl
+python-docx
+pytest
