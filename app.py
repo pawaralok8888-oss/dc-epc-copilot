@@ -34,87 +34,125 @@ FOCUS = "PO-023"                      # default changed node (chiller PO)
 BASE_FINISH = dt.date(2027, 3, 12)    # planned handover (demo)
 BUFFER_DAYS = 5                       # schedule buffer used for "chance of missing target"
 CONF_MIN = 0.80                       # below this a photo reading goes to human review
-SLACK = {"PO-023": 3}                 # days of float on the delivery (demo)
+SLACK = {}                            # days of float per PO (none in the real data yet)
 def load(name, default):
     f = CACHE / name
     return json.loads(f.read_text()) if f.exists() else default
 
 
 # ----------------------------------------------------------------------------- demo data
-# Test tuple: id, level, tier, clause, equipment, system, status, steps, instruments, acceptance, reason
-_T = [
-    ("T-L1-001", "L1", "III", "CL-4.2", "EQ-UPS-02", "Power", "Approved", "Read nameplate; compare with submittal SUB-009; record variance", "Camera", "Nameplate rating equals 500 kVA", "L1 covers document and nameplate checks before installation."),
-    ("T-L3-009", "L3", "III", "CL-5.1", "EQ-BRK-02", "Power", "Draft", "Check trip settings; run primary injection; record trip times", "Primary injection set", "Trips within curve +/-10%", "L3 covers start-up tests of protective devices."),
-    ("T-L4-017", "L4", "III", "CL-4.2", "EQ-UPS-02", "Power", "Draft", "Connect load bank; step load 25-100%; record output voltage", "Load bank, power analyser", "Output voltage within +/-1% at 100% load", "Recommended at L4 because this needs the UPS under real load."),
-    ("T-L4-018", "L4", "III", "CL-4.2", "EQ-UPS-02", "Power", "Draft", "Simulate mains failure at full load; time the transfer; record runtime", "Load bank, scope", "Zero-break transfer; runtime of at least 10 min", "L4 covers failover under load."),
-    ("T-L4-021", "L4", "III", "CL-6.1", "EQ-CH-01", "Cooling", "Draft", "Run chiller at design load; log supply temperature; check flow", "Flow meter, data logger", "Supply temperature within 1 C of setpoint", "L4 needs the chiller under real heat load."),
-    ("T-L4-022", "L4", "III", "CL-6.1", "EQ-CH-01", "Cooling", "Approved", "Pressure-test circuit; inspect joints; record decay", "Pressure gauge", "No pressure decay over 30 min", "L4 includes leakage checks before integrated runs."),
-    ("T-L4-030", "L4", "IV", "CL-4.2", "EQ-UPS-02", "Power", "Draft", "Fail one UPS module; verify load stays up; restore module", "Load bank", "No load interruption", "Tier IV adds fault-tolerance tests."),
-    ("T-L5-002", "L5", "III", "CL-6.1", "EQ-CH-01", "Both", "Draft", "Run integrated failure scenario across power and cooling", "Full load bank, BMS", "Site stays within thermal limits", "L5 is the full integrated test."),
-]
-_K = ("id", "level", "tier", "clause", "equipment", "system", "status", "steps", "instruments", "acceptance", "reason")
-TESTS = load("tests.json", [dict(zip(_K, t)) for t in _T])
+# real data (data/*.csv, data/cache/*.json) - replaces the old built-in demo data
+TESTS = load("tests.json", [])           # Member B writes this file; empty until then
+DATA = ROOT / "data"
 
-NODES = {  # id: (type, label, system)
-    "CL-4.2": ("Clause", "UPS capacity", "Power"), "CL-5.1": ("Clause", "Breaker rating", "Power"),
-    "CL-6.1": ("Clause", "Cooling capacity", "Cooling"), "CL-7.3": ("Clause", "Fire interlock", "Both"),
-    "CL-8.1": ("Clause", "Generator autostart", "Power"),
-    "EQ-UPS-02": ("Equipment", "UPS-02", "Power"), "EQ-BRK-02": ("Equipment", "Breaker-02", "Power"),
-    "EQ-CH-01": ("Equipment", "Chiller-01", "Cooling"),
-    "SUB-009": ("PO / Submittal", "UPS submittal", "Power"), "SUB-012": ("PO / Submittal", "Breaker submittal", "Power"),
-    "PO-023": ("PO / Submittal", "Chiller PO", "Cooling"),
-    "TASK-012": ("Task", "Chiller install", "Cooling"), "TASK-018": ("Task", "UPS install", "Power"),
-    "TASK-024": ("Task", "Breaker testing", "Power"), "TASK-031": ("Task", "Commissioning", "Both"),
-}
+
+def read_csv(name):
+    f = DATA / name
+    if not f.exists():
+        return []
+    with open(f, newline="", encoding="utf-8-sig") as fh:
+        return [{(k or "").strip(): (v or "").strip() for k, v in r.items()} for r in csv.DictReader(fh)]
+
+
+def sysname(v):
+    v = (v or "").strip().title()
+    return v if v in ("Power", "Cooling") else "Both"
+
+
+def short(s, n=24):
+    s = " ".join((s or "").split())
+    return s if len(s) <= n else s[: n - 3] + "..."
+
+
+EQUIP, POS, SUBS = read_csv("equipment.csv"), read_csv("pos.csv"), read_csv("submittals.csv")
+TASKS, CLAUSES = read_csv("tasks.csv"), read_csv("spec_ground_truth.csv")
+ID_RE = re.compile(r"\b(?:EQ|PO|SUB)-[A-Z0-9]+(?:-[A-Z0-9]+)*\b")
+NODES, EDGES = {}, []  # NODES: id -> (type, label, system)
+for e in EQUIP:
+    NODES[e["equipment_id"]] = ("Equipment", short(e.get("type") or e["equipment_id"]), sysname(e.get("system")))
+for s in SUBS:
+    eq = s.get("equipment_id", "")
+    NODES[s["submittal_id"]] = ("PO / Submittal", short(s.get("model") or "Submittal " + s["submittal_id"]),
+                                NODES[eq][2] if eq in NODES else "Both")
+    EDGES.append((eq, s["submittal_id"]))
+    if s.get("clause_id"):
+        EDGES.append((s["clause_id"], eq))
+for p in POS:
+    eq = p.get("equipment_id", "")
+    NODES[p["po_id"]] = ("PO / Submittal", short(p.get("vendor") or "PO " + p["po_id"]),
+                         NODES[eq][2] if eq in NODES else "Both")
+    EDGES.append((eq, p["po_id"]))
+for c in CLAUSES:
+    cid = c["clause_id"]
+    if c.get("equipment_id"):
+        EDGES.append((cid, c["equipment_id"]))
+    eqs = [b for a, b in EDGES if a == cid]
+    sysv = sysname(c.get("system")) if c.get("system") else (NODES[eqs[0]][2] if eqs and eqs[0] in NODES else "Both")
+    NODES[cid] = ("Clause", short(c.get("text") or c.get("description") or c.get("name") or cid, 26), sysv)
+for t in TASKS:
+    tid = t["task_id"]
+    links = [x for x in ID_RE.findall(t.get("linked_id", "") + " " + t.get("linked_ids", "")) if x in NODES]
+    NODES[tid] = ("Task", short(t.get("name") or tid, 22), NODES[links[0]][2] if links else "Both")
+    EDGES += [(x, tid) for x in links]
+    EDGES += [(d, tid) for d in re.findall(r"TASK-\d+", t.get("depends_on", ""))]
 for _t in TESTS:
     NODES[_t["id"]] = ("Test", _t["id"], _t.get("system", "Both"))
-EDGES = [("CL-4.2", "EQ-UPS-02"), ("CL-5.1", "EQ-BRK-02"), ("CL-6.1", "EQ-CH-01"),
-         ("EQ-UPS-02", "SUB-009"), ("EQ-BRK-02", "SUB-012"), ("EQ-CH-01", "PO-023"),
-         ("SUB-009", "T-L4-017"), ("SUB-009", "T-L4-018"), ("SUB-009", "T-L4-030"), ("SUB-012", "T-L3-009"),
-         ("PO-023", "T-L4-021"), ("PO-023", "T-L4-022"), ("PO-023", "TASK-012"),
-         ("T-L4-017", "T-L5-002"), ("T-L4-021", "T-L5-002"), ("T-L5-002", "TASK-031"),
-         ("T-L4-017", "TASK-018"), ("T-L4-018", "TASK-031"), ("T-L4-022", "TASK-031"),
-         ("TASK-012", "TASK-031"), ("T-L3-009", "TASK-024")]
 G = nx.DiGraph()
 G.add_nodes_from(NODES)
 G.add_edges_from(e for e in EDGES if e[0] in NODES and e[1] in NODES)
-G.add_edges_from((t["clause"], t["id"]) for t in TESTS if t["clause"] in NODES)  # VERIFIED_BY
+G.add_edges_from((t["clause"], t["id"]) for t in TESTS if t.get("clause") in NODES)  # VERIFIED_BY
+G.add_edges_from((t["equipment"], t["id"]) for t in TESTS if t.get("equipment") in NODES)
 
-INSIGHTS = load("insights.json", [
-    dict(id="INS-UPS", sev="Critical", system="Power", node="SUB-009", vendor="Voltix", days=9,
-         title="UPS-02 rated 400 kVA, spec CL-4.2 requires 500 kVA", ids=["CL-4.2", "SUB-009", "EQ-UPS-02"],
-         what="Submittal SUB-009 lists UPS-02 at 400 kVA, but clause CL-4.2 requires 500 kVA.",
-         why="May lead to insufficient capacity at peak load and put availability and SLA compliance at risk.",
-         cause="Vendor supplied a lower-rated model than specified.",
-         action="Request a 500 kVA unit, or get a formal deviation approval with a risk assessment."),
-    dict(id="INS-CH", sev="Warning", system="Cooling", node="PO-023", vendor="CoolFlow", days=None,
-         title="Chiller PO-023 delivery delayed", ids=["CL-6.1", "PO-023", "EQ-CH-01"],
-         what="Delivery of PO-023 has slipped by {delay} days (what-if value from the sidebar).",
-         why="Delays cooling commissioning and every test and task that depends on the chiller.",
-         cause="Not determinable from the available documents.",
-         action="Expedite with the vendor or request a plan from an alternate supplier."),
-    dict(id="INS-PH", sev="Info", system="Power", node=None, vendor="Voltix", days=3,
-         title="Photo PH-08 needs human review", ids=["CL-4.2", "SUB-009", "EQ-UPS-02"],
-         what="The nameplate image is blurry, so the rating could not be read with confidence.",
-         why="A non-compliant unit or missing nameplate data could stay hidden.",
-         cause="Poor photo quality or lighting.",
-         action="Request a clearer photo or verify on site."),
-])
-_P = dict(
-    PH_03=dict(id="PH-03", equipment="EQ-BRK-02", location="Level 4 - Electrical Room", blur=False,
-               expected=dict(Model="Masterpact NW16", Rating="630 A", Tag="EQ-BRK-02"),
-               read=dict(Model="Masterpact NW16", Rating="400 A", Tag="EQ-BRK-02"),
-               conf=dict(Model=0.96, Rating=0.92, Tag=0.98),
-               why="Breaker rating is below the approved value and can affect load capacity and safety compliance.",
-               action="Verify with the site team, check the breaker model and update the submittal if required."),
-    PH_08=dict(id="PH-08", equipment="EQ-UPS-02", location="Level 4 - UPS Room", blur=True,
-               expected=dict(Model="Galaxy VX", Rating="500 kVA", Tag="EQ-UPS-02"),
-               read=dict(Model="Galaxy VX", Rating="500 kVA", Tag="EQ-UPS-02"),
-               conf=dict(Model=0.81, Rating=0.42, Tag=0.77),
-               why="The rating cannot be confirmed, so a mismatch could be hidden.",
-               action="Send to human review and request a clearer photo."),
-)
-PHOTOS = {p["id"]: p for p in load("photos.json", list(_P.values()))}
+SUB_CLAUSE = {s.get("equipment_id"): s.get("clause_id") for s in SUBS}
+VENDOR = {}
+for _r in EQUIP + POS + SUBS:
+    if _r.get("vendor"):
+        for _k in ("equipment_id", "po_id", "submittal_id"):
+            if _r.get(_k):
+                VENDOR.setdefault(_r[_k], _r["vendor"])
+SEV = {"high": "Critical", "medium": "Warning", "low": "Info"}
+TEXT = {  # why it matters, likely cause, recommended action
+    "spec_deviation": ("The submitted rating does not meet the specification, which risks capacity and compliance.",
+                       "Submitted rating is below the specified value.",
+                       "Request a compliant unit, or get a formal deviation approval with a risk assessment."),
+    "late_delivery": ("A late delivery pushes back installation, testing and commissioning of everything downstream.",
+                      "Promised delivery date is later than the date the schedule needs.",
+                      "Expedite with the vendor, or ask for a recovery plan or an alternate supplier."),
+    "photo_mismatch": ("Equipment in the field does not match the approved design and may not meet load or safety requirements.",
+                       "Wrong unit installed, or the submittal data is wrong.",
+                       "Verify with the site team, then update the submittal or replace the unit."),
+    "photo_review": ("The nameplate could not be read with confidence, so a mismatch could stay hidden.",
+                     "Poor photo quality or lighting.",
+                     "Request a clearer photo or verify on site."),
+}
+try:
+    from src.common.alerts import load_alerts
+    ALERTS = load_alerts()
+except Exception as _e:  # keep the app alive if a data file is missing
+    ALERTS = []
+    st.warning(f"Could not load alerts: {_e}")
+INSIGHTS = []
+for _a in ALERTS:
+    _eq, _kind = _a.get("equipment_id", ""), _a.get("type", "")
+    _ref = _a["id"].split("-", 1)[-1]
+    _node = _ref if _kind == "late_delivery" else _eq
+    _m = re.search(r"CL-[\d.]+\d", _a.get("detail", ""))
+    _anc = sorted(x for x in (nx.ancestors(G, _eq) if _eq in G else ()) if NODES[x][0] == "Clause")
+    _clause = _m.group(0) if _m else (SUB_CLAUSE.get(_eq) or (_anc[0] if _anc else None))
+    _key = (("photo_review" if _a.get("severity") == "low" else "photo_mismatch") if _kind == "reality_delta" else _kind)
+    _why, _cause, _action = TEXT.get(_key, ("Review this item.", "Not determinable from the available documents.",
+                                            "Check with the responsible engineer."))
+    INSIGHTS.append(dict(
+        id=_a["id"], sev=SEV.get(_a.get("severity"), "Info"), system=NODES[_eq][2] if _eq in NODES else "Both",
+        node=_node if _node in G else None, vendor=VENDOR.get(_ref) or VENDOR.get(_eq) or "-",
+        days=None if _kind == "late_delivery" else 0, title=_a["title"],
+        ids=list(dict.fromkeys(x for x in (_clause, _ref, _eq) if x)),
+        what=_a.get("detail", "").replace("{", "{{").replace("}", "}}"),
+        why=_why, cause=_cause, action=_action))
+PHOTOS = {p["id"]: p for p in load("photos.json", [])}
+FOCUS = next((i["node"] for i in INSIGHTS if i["id"].startswith("LATE-") and i["node"]), FOCUS)
+if FOCUS not in G:
+    FOCUS = next(iter(G), FOCUS)
 SUGGESTED = ["Why is the UPS flagged?", "What does the chiller delay affect?", "Which clauses have no test?"]
 
 
@@ -204,21 +242,23 @@ def answer(q):
     except ImportError:
         pass
     ql, delay = q.lower(), st.session_state.delay
-    if "ups" in ql:
-        imp = impact("SUB-009")
-        return dict(text=f"UPS-02 is flagged because submittal SUB-009 lists 400 kVA while clause CL-4.2 requires 500 kVA. "
+    dev = next((i for i in INSIGHTS if i["id"].startswith("DEV-")), None)
+    late = next((i for i in INSIGHTS if i["id"].startswith("LATE-")), None)
+    if dev and any(w in ql for w in ("ups", "flag", "deviation", "spec")):
+        imp = impact(dev["node"])
+        return dict(text=f"{dev['title']}. {dev['what'].format(delay=delay)} "
                          f"It affects {len(imp['tests'])} tests and {len(imp['tasks'])} tasks.",
-                    cites=["CL-4.2", "SUB-009", "EQ-UPS-02", "T-L4-017"])
-    if "chiller" in ql or "delay" in ql:
-        imp, sim = impact("PO-023"), simulate("PO-023", delay)
-        return dict(text=f"The **{delay}-day** delay on PO-023 affects **{len(imp['tests'])}** tests and "
+                    cites=[c for c in dev["ids"] if c in G])
+    if late and ("chiller" in ql or "delay" in ql or "late" in ql):
+        imp, sim = impact(late["node"]), simulate(late["node"], delay)
+        return dict(text=f"A **{delay}-day** delay on {late['node']} affects **{len(imp['tests'])}** tests and "
                          f"**{len(imp['tasks'])}** tasks and pushes handover by about **{sim['median']:.0f} days** "
-                         f"(simulation-based estimate, range {sim['p10']:.0f}-{sim['p90']:.0f}).",
-                    cites=["CL-6.1", "PO-023", "T-L4-021", "TASK-031"])
+                         f"(placeholder estimate, range {sim['p10']:.0f}-{sim['p90']:.0f}).",
+                    cites=[c for c in late["ids"] if c in G])
     if "test" in ql or "clause" in ql or "gap" in ql:
         g = gap_clauses()
         return dict(text=f"{len(g)} clauses have no linked test: {', '.join(g)}.", cites=g)
-    return dict(text="I can answer questions about the UPS deviation, the chiller delay and clauses without tests.", cites=[])
+    return dict(text="I can answer questions about the flagged deviations, the late delivery and clauses without tests.", cites=[])
 
 
 # ----------------------------------------------------------------------------- look and feel (matches the mockups)
@@ -235,6 +275,7 @@ NAV = {"Overview": "🏠", "Insights": "💡", "Graph": "🕸️", "Tests": "�
 TYPES = ["Clause", "Equipment", "PO / Submittal", "Test", "Task"]
 ICON = {"Clause": "📄", "Equipment": "⚙️", "PO / Submittal": "🧾", "Test": "🧪", "Task": "📋"}
 SEVK = {"Critical": ("red", "!"), "Warning": ("amber", "▲"), "Info": ("blue", "i")}
+FIELD_FOR = {"Clause": "requirement value", "Equipment": "type and system", "PO / Submittal": "rating / delivery date", "Test": "acceptance criteria", "Task": "schedule and dependencies"}
 
 CSS = """
 .stApp,[data-testid="stAppViewContainer"]{background:var(--bg);color:var(--text);font-family:Inter,"Segoe UI",system-ui,sans-serif}
@@ -356,11 +397,11 @@ def kpi(cls, icon, label, value, foot, foot_cls, extra=""):
 
 
 def risk_sub(i):
-    if i["node"]:
-        imp = impact(i["node"])
-        return f"Affects: {len(imp['tests'])} tests, {len(imp['tasks'])} tasks • ~{insight_days(i)} days delay"
-    low = min((min(p["conf"].values()) for p in PHOTOS.values()), default=1)
-    return f"Low confidence ({low:.0%})"
+    imp = impact(i["node"]) if i["node"] else None
+    d = insight_days(i)
+    if not imp:
+        return "No downstream impact found"
+    return f"Affects: {len(imp['tests'])} tests, {len(imp['tasks'])} tasks" + (f" \u2022 ~{d} days delay" if d else "")
 
 
 def chart_svg(df):
@@ -425,14 +466,14 @@ def overview():
         a, b = st.columns([8, 1.5], vertical_alignment="center")
         H(f'<div class="hl"><div class="shield">🛡️</div><div><div class="ht">Project Health</div><div class="hs">'
           f'Handover {state}: +{sim["median"]:.0f} days, {sim["prob"]:.0%} chance of missing target date. '
-          f'Main driver: Chiller {FOCUS}.</div></div></div>', a)
+          f'Main driver: {FOCUS} (delay figures are placeholders until the Day 4 model).</div></div></div>', a)
         b.button("View Details  →", key="vd", on_click=go, args=("Insights",), use_container_width=True)
     bar = f'<div class="bar"><b><i style="width:{pct:.0%}"></i></b>{pct:.0%}</div>'
     H('<div class="kpis">'
       + kpi("red", "⚠️", "Open Deviations", len(open_i), f"↑ {crit} critical", "t-red")
-      + kpi("green", "📋", "Spec Coverage", f"{cov:.0%}", f"{len(gaps)} clauses without a test", "t-green" if not gaps else "t-amber")
-      + kpi("blue", "🧪", "Tests Approved", f"{appr} / {len(TESTS)}", "", "", bar)
-      + kpi("amber", "⏱️", "Projected Delay", f"+{sim['median']:.0f} days", f"↑ range {sim['p10']:.0f}-{sim['p90']:.0f} d", "t-red")
+      + kpi("green", "📋", "Spec Coverage", f"{cov:.0%}" if TESTS else "-", f"{len(gaps)} clauses without a test" if TESTS else "no tests yet (waiting for Member B)", "t-green" if not gaps else "t-amber")
+      + kpi("blue", "🧪", "Tests Approved", f"{appr} / {len(TESTS)}", "no tests yet (waiting for Member B)" if not TESTS else "", "t-muted", bar)
+      + kpi("amber", "⏱️", "Delay (placeholder)", f"+{sim['median']:.0f} days", f"range {sim['p10']:.0f}-{sim['p90']:.0f} d, demo estimate", "t-muted")
       + kpi("", "🖼️", "Photos for Review", review, f"↑ {review} flagged" if review else "none open", "t-amber") + '</div>')
     left, right = st.columns(2)
     with left, st.container(key="panel_risks"):
@@ -448,10 +489,9 @@ def overview():
             st.success("No open deviations. Run the spec check to refresh.")
     with right, st.container(key="panel_chart"):
         H('<div class="pt">📊 Test Status by Level</div>')
-        df = pd.DataFrame({"level": [t["level"] for t in TESTS],
-                           "status": ["Approved" if x == "Approved" else "Rejected" if x == "Rejected" else "Pending" for x in stat]})
-        df = df.groupby(["level", "status"]).size().unstack(fill_value=0).reindex(LEVELS, fill_value=0)
-        df = df.reindex(columns=["Approved", "Pending", "Rejected"], fill_value=0)
+        df = pd.DataFrame(0, index=LEVELS, columns=["Approved", "Pending", "Rejected"])
+        for t, x in zip(TESTS, stat):
+            df.loc[t["level"], "Approved" if x == "Approved" else "Rejected" if x == "Rejected" else "Pending"] += 1
         H('<div style="text-align:right;font-size:12px;color:var(--muted)">'
           '<span style="color:var(--green)">●</span> Approved &nbsp; <span style="color:var(--blue)">●</span> Pending &nbsp; '
           '<span style="color:var(--red)">●</span> Rejected</div>' + chart_svg(df))
@@ -467,8 +507,9 @@ def insights():
         dec = st.session_state.decisions.get(("insight", i["id"]))
         kind, glyph = SEVK[i["sev"]]
         imp = impact(i["node"]) if i["node"] else None
-        impact_line = (f"{len(imp['tests'])} tests, {len(imp['tasks'])} tasks, ~{insight_days(i)} days delay" if imp
-                       else f"~{insight_days(i)} days delay if the unit has to be replaced")
+        d = insight_days(i)
+        impact_line = ((f"{len(imp['tests'])} tests, {len(imp['tasks'])} tasks" + (f", ~{d} days delay" if d else ""))
+                       if imp else "No downstream impact found")
         with st.container(key=f"card_{i['id']}"):
             t = st.columns([5, 3], vertical_alignment="center")
             H(f'<span class="sico s-{kind}">{glyph}</span>{sev_chip(i["sev"])}<span class="ititle">{i["title"]}</span>', t[0])
@@ -479,7 +520,7 @@ def insights():
               + sec("⚠️", "Why it matters", i["why"]), b[0])
             H(sec("⚡", "Impact", impact_line) + sec("🔗", "Likely cause", i["cause"])
               + sec("⚙️", "Recommended action", i["action"]), b[1])
-            b[2].button("⌗  View in graph", key=f"vg_{i['id']}", on_click=go, args=("Graph", i["node"] or "SUB-009"), use_container_width=True)
+            b[2].button("⌗  View in graph", key=f"vg_{i['id']}", on_click=go, args=("Graph", i["node"] or i["ids"][-1]), use_container_width=True)
             r = b[2].columns(2)
             if r[0].button("✔ Approve", key=f"appr_{i['id']}", use_container_width=True):
                 log_decision("insight", i["id"], "Approved"); st.rerun()
@@ -609,7 +650,7 @@ def tests():
                 log_decision("test", pick, "Approved"); st.rerun()
             if b[1].button("✕ Reject", key=f"rej_{pick}", use_container_width=True):
                 log_decision("test", pick, "Rejected"); st.rerun()
-    if gaps:
+    if gaps and TESTS:
         H(f'<div class="strip" style="margin-top:14px;background:var(--amber_bg)">⚠️ <b>Clauses with no test ({len(gaps)}):</b> '
           + ", ".join(f"{g} ({NODES[g][1]})" for g in gaps) + "</div>")
 
@@ -655,6 +696,9 @@ def install_checks():
 def photos():
     if st.session_state.level == "L2":
         return install_checks()
+    if not PHOTOS:
+        st.info("No photo results yet. Run: python -m src.vision.reality_delta")
+        return
     top = st.columns([4, 2], vertical_alignment="center")
     H('<div style="display:flex;gap:12px;align-items:center"><div class="lg" style="width:40px;height:40px">📷</div>'
       '<div><div class="pt" style="font-size:22px">Photos</div><div class="rs">Verify equipment in the field against approved design using AI vision.</div></div></div>', top[0])
