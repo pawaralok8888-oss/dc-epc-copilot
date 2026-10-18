@@ -101,18 +101,64 @@ def run_all(refresh=False):
     cache = {} if refresh or not CACHE.exists() else json.loads(CACHE.read_text())
     out = []
     for p in load_manifest():
+        err = None
         if p["id"] not in cache:
             try:
                 cache[p["id"]] = extract(PHOTOS / p["file"])
-            except Exception as e:      # API error, quota, etc: do not crash the run
-                cache[p["id"]] = {"model": None, "rating_value": None, "unit": None, "tag": None,
-                                  "confidence": 0.0, "error": f"{type(e).__name__}: {e}"[:200]}
-        r = compare(cache[p["id"]], p["equipment_id"], subs)
+            except Exception as e:      # API error, quota, etc: report it, never cache it
+                err = f"{type(e).__name__}: {e}"[:300]
+        ext = cache.get(p["id"]) or {"model": None, "rating_value": None, "unit": None, "tag": None,
+                                     "confidence": 0.0}
+        r = compare(ext, p["equipment_id"], subs)
+        if err:
+            r["reasons"].insert(0, "API ERROR " + err)
         r.update(photo_id=p["id"], file=p["file"])
         out.append(r)
     CACHE.parent.mkdir(parents=True, exist_ok=True)
     CACHE.write_text(json.dumps(cache, indent=2))
     return out
+
+
+def cached_results():
+    """Compare cached photo reads only (never calls the API). Used by the app."""
+    if not CACHE.exists():
+        return []
+    cache, subs, out = json.loads(CACHE.read_text()), load_submittals(), []
+    for p in load_manifest():
+        if p["id"] in cache:
+            r = compare(cache[p["id"]], p["equipment_id"], subs)
+            r.update(photo_id=p["id"], file=p["file"])
+            out.append(r)
+    return out
+
+
+def export_for_app(results=None):
+    """Write data/cache/photos.json in the shape app.py's Photos page reads."""
+    results = cached_results() if results is None else results
+    subs, out = load_submittals(), []
+    for r in results:
+        e, x, eq = r["extracted"], r["expected"], r["equipment_id"]
+        if not x:   # unreadable photo: show the primary approved submittal as the expectation
+            s0 = subs[eq][0]
+            x = {"model": s0["model"], "rating_value": s0["rating_value"], "unit": s0["unit"], "tag": eq.replace("EQ-", "")}
+        conf = min(max(float(e.get("confidence") or 0), 0.0), 1.0)
+        read = {"Model": e.get("model") or "unreadable", "Tag": e.get("tag") or "unreadable",
+                "Rating": f"{e['rating_value']:g} {e.get('unit') or ''}".strip() if e.get("rating_value") is not None else "unreadable"}
+        why, action = {
+            "MATCH": ("Nameplate matches the approved submittal.", "No action needed."),
+            "MISMATCH": ("Installed equipment differs from the approved submittal: " + "; ".join(r["reasons"]) + ".",
+                         "Verify with the site team, check the model and update the submittal if required."),
+            "REVIEW": ("The nameplate could not be read with enough confidence, so a mismatch could stay hidden.",
+                       "Send to human review and request a clearer photo."),
+        }[r["status"]]
+        out.append(dict(id=r["photo_id"], file=r["file"], equipment=eq, location="-", blur=r["status"] == "REVIEW",
+                        bbox=[11, 20, 78, 57],
+                        expected={"Model": x["model"], "Rating": f"{x['rating_value']:g} {x['unit']}", "Tag": x["tag"]},
+                        read=read, conf={"Model": conf, "Rating": conf, "Tag": conf}, why=why, action=action))
+    f = ROOT / "data" / "cache" / "photos.json"
+    f.parent.mkdir(parents=True, exist_ok=True)
+    f.write_text(json.dumps(out, indent=2))
+    return f
 
 
 def print_table(results):
@@ -122,6 +168,9 @@ def print_table(results):
         read = f"{e.get('model')} {e.get('rating_value')}{e.get('unit') or ''}"
         print(f"{r['photo_id']:6} {r['equipment_id']:11} {read:26} {(e.get('confidence') or 0):<5.2f} "
               f"{r['status']:9} {'; '.join(r['reasons'])}")
+    errs = {r["reasons"][0] for r in results if r["reasons"] and r["reasons"][0].startswith("API ERROR")}
+    for e in sorted(errs):
+        print("\n" + e)
     flagged = [r["photo_id"] for r in results if r["status"] != "MATCH"]
     print(f"\nNeed attention: {', '.join(flagged) or 'none'}")
 
@@ -160,4 +209,6 @@ if __name__ == "__main__":
     a = ap.parse_args()
     if a.selftest:
         sys.exit(selftest())
-    print_table(run_all(refresh=a.refresh))
+    res = run_all(refresh=a.refresh)
+    print_table(res)
+    print("Wrote", export_for_app(res))
