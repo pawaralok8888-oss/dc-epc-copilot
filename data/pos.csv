@@ -1,0 +1,12 @@
+po_id,equipment_id,vendor,order_date,promised_date,lead_time_days
+PO-001,EQ-SWG-01,AmpCore Systems,2027-01-15,2027-03-05,49
+PO-002,EQ-UPS-02,VoltEdge Power,2027-01-15,2027-03-31,75
+PO-003,EQ-BAT-02,VoltEdge Power,2027-01-15,2027-03-31,75
+PO-004,EQ-GEN-01,AmpCore Systems,2027-01-15,2027-03-21,65
+PO-005,EQ-ATS-01,GridSafe Electric,2027-01-15,2027-03-22,66
+PO-006,EQ-BRK-05,VoltEdge Power,2027-01-15,2027-03-10,54
+PO-007,EQ-PDU-01,VoltEdge Power,2027-01-15,2027-04-10,85
+PO-008,EQ-CHL-01,ThermoCore Systems,2027-02-01,2027-06-01,120
+PO-009,EQ-PMP-01,ChillTech India,2027-01-15,2027-03-31,75
+PO-010,EQ-CT-01,ThermoCore Systems,2027-01-15,2027-03-26,70
+PO-011,EQ-CRAH-01,ChillTech India,2027-01-15,2027-04-21,96
