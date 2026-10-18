@@ -1,0 +1,18 @@
+[
+  {
+    "id": "DEV-SUB-002",
+    "type": "spec_deviation",
+    "severity": "high",
+    "equipment_id": "EQ-UPS-02",
+    "title": "EQ-UPS-02 rating below spec",
+    "detail": "CL-4.2 requires >= 500 kW; SUB-002 says 400 kW (100 kW, 20% off). 6 schedule tasks depend on this equipment."
+  },
+  {
+    "id": "LATE-PO-008",
+    "type": "late_delivery",
+    "severity": "high",
+    "equipment_id": "EQ-CHL-01",
+    "title": "PO-008 delivery is 47 days late",
+    "detail": "TASK-010 needs it by 2027-04-15; PO-008 promises 2027-06-01. 7 tasks could slip by up to 47 days."
+  }
+]
