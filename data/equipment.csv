@@ -1,0 +1,12 @@
+equipment_id,type,system
+EQ-SWG-01,Main LV switchgear,power
+EQ-UPS-02,UPS module,power
+EQ-BAT-02,UPS battery system,power
+EQ-GEN-01,Standby diesel generator,power
+EQ-ATS-01,Automatic transfer switch,power
+EQ-BRK-05,Main feeder circuit breaker,power
+EQ-PDU-01,Power distribution unit,power
+EQ-CHL-01,Water-cooled chiller,cooling
+EQ-PMP-01,Chilled water pump,cooling
+EQ-CT-01,Cooling tower,cooling
+EQ-CRAH-01,CRAH unit,cooling

@@ -1,0 +1,11 @@
+ERROR 1 - UPS rating below spec
+CL-4.2 requires UPS-02 >= 500 kW. SUB-002 says 400 kW.
+Expected: deviation alert, 100 kW (20 %) below spec.
+
+ERROR 2 - Late chiller delivery
+TASK-010 needs the chiller by 2027-04-15. PO-008 promises 2027-06-01.
+Expected: 47 days late; TASK-011, 012, 013, 014, 015 and 031 are affected.
+
+ERROR 3 - Wrong breaker in photo (Member C)
+CL-4.10 requires BRK-05 = 630 A. SUB-006 says 630 A. The photo shows 400 A.
+Expected: Reality Delta flags a mismatch for EQ-BRK-05.

@@ -1,0 +1,32 @@
+task_id,name,duration_days,depends_on,linked_id,need_by_date
+TASK-001,Site mobilisation,10,,,
+TASK-002,Civil and structural works,40,TASK-001,,
+TASK-003,Switchgear delivery,5,TASK-001,PO-001,2027-03-15
+TASK-004,Switchgear installation,15,TASK-002;TASK-003,,
+TASK-005,Generator delivery,5,TASK-001,PO-004,2027-03-31
+TASK-006,Generator installation,15,TASK-002;TASK-005,,
+TASK-007,ATS delivery,5,TASK-001,PO-005,2027-04-01
+TASK-008,ATS installation,7,TASK-004;TASK-007,,
+TASK-009,UPS delivery,5,TASK-001,PO-002,2027-04-10
+TASK-010,Chiller delivery,5,TASK-001,PO-008,2027-04-15
+TASK-011,Chiller installation,20,TASK-002;TASK-010,,
+TASK-012,Chilled water piping connection,12,TASK-011;TASK-023;TASK-025,,
+TASK-013,Chiller start-up (L3),5,TASK-012,,
+TASK-014,Cooling functional test (L4),7,TASK-013;TASK-027,,
+TASK-015,Integrated systems test (L5),10,TASK-014;TASK-030,,
+TASK-016,Battery delivery,5,TASK-001,PO-003,2027-04-10
+TASK-017,UPS and battery installation,12,TASK-004;TASK-009;TASK-016,,
+TASK-018,Breaker delivery,5,TASK-001,PO-006,2027-03-20
+TASK-019,Breaker installation,5,TASK-004;TASK-018,,
+TASK-020,PDU delivery,5,TASK-001,PO-007,2027-04-20
+TASK-021,PDU installation,8,TASK-019;TASK-020,,
+TASK-022,Pump delivery,5,TASK-001,PO-009,2027-04-10
+TASK-023,Pump installation,8,TASK-002;TASK-022,,
+TASK-024,Cooling tower delivery,5,TASK-001,PO-010,2027-04-05
+TASK-025,Cooling tower installation,15,TASK-002;TASK-024,,
+TASK-026,CRAH delivery,5,TASK-001,PO-011,2027-05-01
+TASK-027,CRAH installation,10,TASK-002;TASK-026,,
+TASK-028,UPS start-up (L3),5,TASK-017;TASK-021,,
+TASK-029,Generator start-up (L3),5,TASK-006;TASK-008,,
+TASK-030,Power functional tests (L4),7,TASK-028;TASK-029,,
+TASK-031,Documentation and handover,14,TASK-015,,

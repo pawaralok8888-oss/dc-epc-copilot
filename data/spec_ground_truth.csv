@@ -1,0 +1,26 @@
+clause_id,section,system,title,text,value,unit,operator,equipment_id,level,tier
+CL-4.1,4,power,Main LV switchgear current rating,The main LV switchgear (SWG-01) shall have a rated busbar current of not less than 4000 A.,4000,A,>=,EQ-SWG-01,L1,III
+CL-4.2,4,power,UPS rated capacity,Each UPS module (UPS-02) shall have a rated output of not less than 500 kW.,500,kW,>=,EQ-UPS-02,L1,III
+CL-4.3,4,power,UPS battery runtime,The UPS battery system (BAT-02) shall support the full rated load for not less than 10 minutes.,10,min,>=,EQ-BAT-02,L4,III
+CL-4.4,4,power,UPS efficiency,UPS-02 shall achieve an efficiency of not less than 96 % in double-conversion mode at full load.,96,%,>=,EQ-UPS-02,L4,III
+CL-4.5,4,power,Generator standby rating,The standby diesel generator (GEN-01) shall have a standby rating of not less than 1500 kW.,1500,kW,>=,EQ-GEN-01,L1,III
+CL-4.6,4,power,Generator start time,GEN-01 shall start and accept load within not more than 15 seconds of a utility failure signal.,15,s,<=,EQ-GEN-01,L4,III
+CL-4.7,4,power,Generator fuel storage,On-site fuel storage for GEN-01 shall support not less than 48 hours of operation at full load.,48,h,>=,EQ-GEN-01,L2,III
+CL-4.8,4,power,ATS transfer time,The automatic transfer switch (ATS-01) shall complete a transfer within not more than 10 seconds.,10,s,<=,EQ-ATS-01,L4,III
+CL-4.9,4,power,ATS current rating,ATS-01 shall be rated for not less than 2000 A continuous current.,2000,A,>=,EQ-ATS-01,L1,III
+CL-4.10,4,power,Feeder breaker rating,The main feeder circuit breaker (BRK-05) shall have a rated current of exactly 630 A.,630,A,=,EQ-BRK-05,L1,III
+CL-4.11,4,power,Breaker breaking capacity,BRK-05 shall have a short-circuit breaking capacity of not less than 50 kA.,50,kA,>=,EQ-BRK-05,L1,III
+CL-4.12,4,power,PDU output voltage,The power distribution unit (PDU-01) shall deliver an output voltage of 415 V.,415,V,=,EQ-PDU-01,L3,III
+CL-4.13,4,power,Concurrent maintainability,"Each critical load shall be fed through not fewer than 2 independent power paths, so that any one path can be isolated for maintenance without load interruption (PDU-01).",2,paths,>=,EQ-PDU-01,L5,III
+CL-4.14,4,power,Power fault tolerance,The power distribution (PDU-01) shall tolerate not fewer than 1 simultaneous fault without interrupting any critical load.,1,fault,>=,EQ-PDU-01,L5,IV
+CL-5.1,5,cooling,Chiller cooling capacity,The water-cooled chiller (CHL-01) shall have a cooling capacity of not less than 1200 kW.,1200,kW,>=,EQ-CHL-01,L1,III
+CL-5.2,5,cooling,Chiller efficiency,CHL-01 shall achieve a coefficient of performance (COP) of not less than 5.5 at full load.,5.5,COP,>=,EQ-CHL-01,L4,III
+CL-5.3,5,cooling,Chilled water supply temperature,CHL-01 shall deliver chilled water at a supply temperature of 18 degC.,18,degC,=,EQ-CHL-01,L4,III
+CL-5.4,5,cooling,Chilled water pump flow,The chilled water pump (PMP-01) shall deliver a flow of not less than 36 L/s.,36,L/s,>=,EQ-PMP-01,L3,III
+CL-5.5,5,cooling,Chilled water pump head,PMP-01 shall provide a rated head of not less than 30 m.,30,m,>=,EQ-PMP-01,L1,III
+CL-5.6,5,cooling,Cooling tower heat rejection,The cooling tower (CT-01) shall have a heat rejection capacity of not less than 1500 kW.,1500,kW,>=,EQ-CT-01,L1,III
+CL-5.7,5,cooling,CRAH cooling capacity,Each CRAH unit (CRAH-01) shall have a cooling capacity of not less than 100 kW.,100,kW,>=,EQ-CRAH-01,L1,III
+CL-5.8,5,cooling,CRAH supply air temperature,CRAH-01 shall deliver supply air at a temperature of not more than 25 degC.,25,degC,<=,EQ-CRAH-01,L4,III
+CL-5.9,5,cooling,Cooling redundancy (N+1),"The cooling plant shall include not fewer than 1 standby chiller, so that full capacity is maintained when any one chiller is out of service (CHL-01).",1,standby chiller,>=,EQ-CHL-01,L5,III
+CL-5.10,5,cooling,Cooling restart after transfer,"After a transfer to generator power, CHL-01 shall resume cooling within not more than 120 seconds.",120,s,<=,EQ-CHL-01,L5,III
+CL-5.11,5,cooling,Cooling fault tolerance,A single failure in the cooling path shall not reduce available cooling capacity below 100 % of the design load (CHL-01).,100,%,>=,EQ-CHL-01,L5,IV
