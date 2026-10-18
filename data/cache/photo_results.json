@@ -1,0 +1,72 @@
+{
+  "PH-01": {
+    "model": "AMPC-SWG-4000",
+    "rating_value": 4000.0,
+    "unit": "A",
+    "tag": "SWG-01",
+    "confidence": 0.99
+  },
+  "PH-02": {
+    "model": "VOLT-UPS-400",
+    "rating_value": 400.0,
+    "unit": "kW",
+    "tag": "UPS-02",
+    "confidence": 0.99
+  },
+  "PH-03": {
+    "model": "AMPC-GEN-1500",
+    "rating_value": 1500.0,
+    "unit": "kW",
+    "tag": "GEN-01",
+    "confidence": 0.99
+  },
+  "PH-04": {
+    "model": "GRID-ATS-2000",
+    "rating_value": 2000.0,
+    "unit": "A",
+    "tag": "ATS-01",
+    "confidence": 0.99
+  },
+  "PH-05": {
+    "model": "VOLT-BRK-400",
+    "rating_value": 400.0,
+    "unit": "A",
+    "tag": "BRK-05",
+    "confidence": 0.99
+  },
+  "PH-06": {
+    "model": "THER-CHL-1200",
+    "rating_value": 1200.0,
+    "unit": "kW",
+    "tag": "CHL-01",
+    "confidence": 0.99
+  },
+  "PH-07": {
+    "model": "CHIL-PMP-36",
+    "rating_value": 36.0,
+    "unit": "L/s",
+    "tag": "PMP-01",
+    "confidence": 0.99
+  },
+  "PH-08": {
+    "model": "THER-CT-1650",
+    "rating_value": 1650.0,
+    "unit": "kW",
+    "tag": "CT-01",
+    "confidence": 0.99
+  },
+  "PH-09": {
+    "model": "CHIL-CRAH-100",
+    "rating_value": 100.0,
+    "unit": "kW",
+    "tag": "CRAH-01",
+    "confidence": 0.99
+  },
+  "PH-10": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.1
+  }
+}
