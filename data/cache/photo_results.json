@@ -1,0 +1,82 @@
+{
+  "PH-01": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-02": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-03": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-04": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-05": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-06": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-07": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-08": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-09": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  },
+  "PH-10": {
+    "model": null,
+    "rating_value": null,
+    "unit": null,
+    "tag": null,
+    "confidence": 0.0,
+    "error": "ModuleNotFoundError: No module named 'dotenv'"
+  }
+}
