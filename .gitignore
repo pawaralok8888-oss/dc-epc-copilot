@@ -14,3 +14,4 @@ __pycache__/
 .DS_Store
 
 # NOTE: data/cache/ is committed on purpose so the demo runs without the API
+*:Zone.Identifier
