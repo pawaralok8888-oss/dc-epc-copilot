@@ -33,7 +33,7 @@ LEVELS = ["L1", "L2", "L3", "L4", "L5"]
 FOCUS = "PO-023"                      # default changed node (chiller PO)
 BASE_FINISH = dt.date(2027, 3, 12)    # planned handover (demo)
 BUFFER_DAYS = 5                       # schedule buffer used for "chance of missing target"
-CONF_MIN = 0.60                       # below this a photo reading goes to human review
+CONF_MIN = 0.80                       # below this a photo reading goes to human review
 SLACK = {"PO-023": 3}                 # days of float on the delivery (demo)
 def load(name, default):
     f = CACHE / name
