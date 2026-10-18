@@ -1,0 +1,302 @@
+[
+  {
+    "id": "PH-01",
+    "file": "PH-01_swg-01.png",
+    "equipment": "EQ-SWG-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "AMPC-SWG-4000",
+      "Rating": "4000 A",
+      "Tag": "SWG-01"
+    },
+    "read": {
+      "Model": "AMPC-SWG-4000",
+      "Tag": "SWG-01",
+      "Rating": "4000 A"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-02",
+    "file": "PH-02_ups-02.png",
+    "equipment": "EQ-UPS-02",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "VOLT-UPS-400",
+      "Rating": "400 kW",
+      "Tag": "UPS-02"
+    },
+    "read": {
+      "Model": "VOLT-UPS-400",
+      "Tag": "UPS-02",
+      "Rating": "400 kW"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-03",
+    "file": "PH-03_gen-01.png",
+    "equipment": "EQ-GEN-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "AMPC-GEN-1500",
+      "Rating": "1500 kW",
+      "Tag": "GEN-01"
+    },
+    "read": {
+      "Model": "AMPC-GEN-1500",
+      "Tag": "GEN-01",
+      "Rating": "1500 kW"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-04",
+    "file": "PH-04_ats-01.png",
+    "equipment": "EQ-ATS-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "GRID-ATS-2000",
+      "Rating": "2000 A",
+      "Tag": "ATS-01"
+    },
+    "read": {
+      "Model": "GRID-ATS-2000",
+      "Tag": "ATS-01",
+      "Rating": "2000 A"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-05",
+    "file": "PH-05_brk-05.png",
+    "equipment": "EQ-BRK-05",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "VOLT-BRK-630",
+      "Rating": "630 A",
+      "Tag": "BRK-05"
+    },
+    "read": {
+      "Model": "VOLT-BRK-400",
+      "Tag": "BRK-05",
+      "Rating": "400 A"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Installed equipment differs from the approved submittal: rating 400 A vs submittal 630 A; model VOLT-BRK-400 vs submittal VOLT-BRK-630.",
+    "action": "Verify with the site team, check the model and update the submittal if required."
+  },
+  {
+    "id": "PH-06",
+    "file": "PH-06_chl-01.png",
+    "equipment": "EQ-CHL-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "THER-CHL-1200",
+      "Rating": "1200 kW",
+      "Tag": "CHL-01"
+    },
+    "read": {
+      "Model": "THER-CHL-1200",
+      "Tag": "CHL-01",
+      "Rating": "1200 kW"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-07",
+    "file": "PH-07_pmp-01.png",
+    "equipment": "EQ-PMP-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "CHIL-PMP-36",
+      "Rating": "36 L/s",
+      "Tag": "PMP-01"
+    },
+    "read": {
+      "Model": "CHIL-PMP-36",
+      "Tag": "PMP-01",
+      "Rating": "36 L/s"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-08",
+    "file": "PH-08_ct-01.png",
+    "equipment": "EQ-CT-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "THER-CT-1650",
+      "Rating": "1650 kW",
+      "Tag": "CT-01"
+    },
+    "read": {
+      "Model": "THER-CT-1650",
+      "Tag": "CT-01",
+      "Rating": "1650 kW"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-09",
+    "file": "PH-09_crah-01.png",
+    "equipment": "EQ-CRAH-01",
+    "location": "-",
+    "blur": false,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "CHIL-CRAH-100",
+      "Rating": "100 kW",
+      "Tag": "CRAH-01"
+    },
+    "read": {
+      "Model": "CHIL-CRAH-100",
+      "Tag": "CRAH-01",
+      "Rating": "100 kW"
+    },
+    "conf": {
+      "Model": 0.99,
+      "Rating": 0.99,
+      "Tag": 0.99
+    },
+    "why": "Nameplate matches the approved submittal.",
+    "action": "No action needed."
+  },
+  {
+    "id": "PH-10",
+    "file": "PH-10_chl-01_blurry.png",
+    "equipment": "EQ-CHL-01",
+    "location": "-",
+    "blur": true,
+    "bbox": [
+      11,
+      20,
+      78,
+      57
+    ],
+    "expected": {
+      "Model": "THER-CHL-1200",
+      "Rating": "1200 kW",
+      "Tag": "CHL-01"
+    },
+    "read": {
+      "Model": "unreadable",
+      "Tag": "unreadable",
+      "Rating": "unreadable"
+    },
+    "conf": {
+      "Model": 0.1,
+      "Rating": 0.1,
+      "Tag": 0.1
+    },
+    "why": "The nameplate could not be read with enough confidence, so a mismatch could stay hidden.",
+    "action": "Send to human review and request a clearer photo."
+  }
+]
