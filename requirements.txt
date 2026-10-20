@@ -1,4 +1,4 @@
-anthropic
+google-genai
 pydantic
 python-dotenv
 pymupdf
