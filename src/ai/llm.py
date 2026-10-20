@@ -60,3 +60,16 @@ def ask_llm_json(prompt: str, max_tokens: int = 8000, schema=None):
             print(f"  note: reply was cut off; kept {len(partial)} complete records")
             return partial
         raise RuntimeError(f"Model returned invalid JSON ({e}). Last 200 chars: ...{text[-200:]}")
+
+
+def ask_llm_text(prompt: str, max_tokens: int = 1000) -> str:
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        raise RuntimeError("GEMINI_API_KEY is not set. Add it to .env.")
+    client = genai.Client(api_key=key)
+    response = client.models.generate_content(
+        model=MODEL,
+        contents=prompt,
+        config=types.GenerateContentConfig(max_output_tokens=max_tokens),
+    )
+    return (response.text or "").strip()
