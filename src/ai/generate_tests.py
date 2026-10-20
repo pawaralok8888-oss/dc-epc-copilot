@@ -1,12 +1,22 @@
+import json
+
 from src.ai.extract import Requirement
 from src.ai.llm import ask_llm_json
 
-PROMPT = """Draft one verification test for this requirement. Return a JSON object with keys:
-id (format T-L{level}-NNN), clause_id, level, tier, steps (list of strings),
-instruments (list), acceptance (string), reason (why this level), status ("planned").
+PROMPT = """Draft one verification test for EACH requirement below.
+Return a JSON array with one object per requirement, in the same order.
+Each object has these keys:
+clause_id (copy exactly from the requirement),
+steps (list of strings),
+instruments (list of strings),
+acceptance (string),
+reason (one sentence on why this test belongs to the requirement's level).
+Do not include id, level, tier, or any other keys.
 
-Requirement: """
+Requirements (JSON list):
+"""
 
 
-def draft_test(req: Requirement) -> dict:
-    return ask_llm_json(PROMPT + req.model_dump_json(), max_tokens=1500)
+def draft_tests_batch(reqs: list[Requirement]) -> list[dict]:
+    payload = [r.model_dump() for r in reqs]
+    return ask_llm_json(PROMPT + json.dumps(payload), max_tokens=8000)

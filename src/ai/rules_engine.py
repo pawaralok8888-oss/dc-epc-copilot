@@ -4,6 +4,12 @@ from pathlib import Path
 RULES = json.loads(Path("rules/level_rules.json").read_text())
 
 
+def _same_scope(a: dict, b: dict) -> bool:
+    if a.get("equipment_id") and b.get("equipment_id"):
+        return a["equipment_id"] == b["equipment_id"]
+    return a.get("system") == b.get("system")
+
+
 def check_test(test: dict, all_tests: list[dict]) -> list[str]:
     rule = RULES["levels"].get(test["level"])
     if rule is None:
@@ -11,11 +17,11 @@ def check_test(test: dict, all_tests: list[dict]) -> list[str]:
     problems = []
     for prereq in rule["prerequisites"]:
         has_prereq = any(
-            t["clause_id"] == test["clause_id"] and t["level"] == prereq
+            t["level"] == prereq and _same_scope(test, t)
             for t in all_tests
         )
         if not has_prereq:
-            problems.append(f"{test['id']}: no {prereq} test for {test['clause_id']}")
+            problems.append(f"{test['id']}: no {prereq} test for the same equipment or system")
     return problems
 
 
