@@ -1,0 +1,14 @@
+{
+  "levels": {
+    "L1": {"name": "Nameplate verification", "check_types": ["nameplate_rating_match", "tag_match"], "prerequisites": []},
+    "L2": {"name": "Installation checks", "check_types": ["mounting", "clearance", "termination"], "prerequisites": ["L1"]},
+    "L3": {"name": "Functional checks", "check_types": ["power_on", "alarm_check"], "prerequisites": ["L2"]},
+    "L4": {"name": "Performance tests", "check_types": ["load_test", "rating_under_load"], "prerequisites": ["L3"]},
+    "L5": {"name": "Integrated systems test", "check_types": ["failover", "end_to_end"], "prerequisites": ["L4"]}
+  },
+  "tier_additions": {
+    "III": ["redundancy_check"],
+    "IV": ["redundancy_check", "concurrent_maintenance"]
+  },
+  "ordering_rules": ["No L5 test may pass before its L4 prerequisite passes"]
+}
