@@ -95,6 +95,17 @@ for t in TASKS:
     NODES[tid] = ("Task", short(t.get("name") or tid, 22), NODES[links[0]][2] if links else "Both")
     EDGES += [(x, tid) for x in links]
     EDGES += [(d, tid) for d in re.findall(r"TASK-\d+", t.get("depends_on", ""))]
+# day-5b: Member B's tests.json (clause_id / equipment_id, list fields, status always Draft)
+def _txt(v):
+    return "; ".join(str(x) for x in v) if isinstance(v, list) else (v or "")
+
+
+TESTS = [dict(t, clause=t.get("clause") or t.get("clause_id") or "", equipment=t.get("equipment") or t.get("equipment_id") or "",
+              system=sysname(t.get("system")), steps=_txt(t.get("steps")), instruments=_txt(t.get("instruments")) or "-",
+              acceptance=_txt(t.get("acceptance")) or "-", reason=_txt(t.get("reason")) or "-",
+              level=t.get("level") or "L1", tier=t.get("tier") or "III",
+              status=t.get("status") if t.get("status") in ("Approved", "Draft", "Rejected", "Blocked") else "Draft")
+         for t in TESTS]
 for _t in TESTS:
     NODES[_t["id"]] = ("Test", _t["id"], _t.get("system", "Both"))
 G = nx.DiGraph()
@@ -102,6 +113,51 @@ G.add_nodes_from(NODES)
 G.add_edges_from(e for e in EDGES if e[0] in NODES and e[1] in NODES)
 G.add_edges_from((t["clause"], t["id"]) for t in TESTS if t.get("clause") in NODES)  # VERIFIED_BY
 G.add_edges_from((t["equipment"], t["id"]) for t in TESTS if t.get("equipment") in NODES)
+
+for _t in TESTS:  # tolerate list fields and missing keys in tests.json
+    for _k in ("steps", "instruments"):
+        if isinstance(_t.get(_k), list):
+            _t[_k] = "; ".join(str(_x) for _x in _t[_k])
+    for _k, _v in (("system", "Both"), ("status", "Draft"), ("tier", "III"), ("equipment", ""), ("steps", ""),
+                   ("instruments", "-"), ("acceptance", "-"), ("reason", "-")):
+        _t.setdefault(_k, _v)
+
+# Day 4 schedule model (src/graph/blast.py): PO gates Task, Task depends_on Task, real dates from the CSVs
+try:
+    from src.graph import blast as _blast
+except ImportError:
+    _blast = None
+try:
+    from src.reports.export import build_traceability_xlsx, build_test_package_docx
+except ImportError:
+    build_traceability_xlsx = build_test_package_docx = None
+
+
+def _num(v):
+    try:
+        return float(v)
+    except (TypeError, ValueError):
+        return 0.0
+
+
+SG = nx.DiGraph()
+for _p in POS:
+    if _p.get("promised_date"):
+        SG.add_node(_p["po_id"], type="PO", promised_date=_p["promised_date"])
+for _t in TASKS:
+    SG.add_node(_t["task_id"], type="Task", duration_days=_num(_t.get("duration_days") or _t.get("duration")),
+                depends_on=_t.get("depends_on", ""), need_by_date=_t.get("need_by_date") or None)
+for _t in TASKS:
+    for _x in ID_RE.findall(_t.get("linked_id", "") + " " + _t.get("linked_ids", "")):
+        if _x in SG and SG.nodes[_x].get("type") == "PO":
+            SG.add_edge(_x, _t["task_id"])
+SCHEDULE_OK = False
+if _blast is not None and any(SG.nodes[_n].get("type") == "Task" for _n in SG):
+    try:
+        BASE_FINISH = dt.date.fromordinal(int(_blast.project_finish(SG)))
+        SCHEDULE_OK = True
+    except Exception as _e:  # e.g. a circular depends_on in tasks.csv
+        st.warning(f"Schedule model disabled: {_e}")
 
 SUB_CLAUSE = {s.get("equipment_id"): s.get("clause_id") for s in SUBS}
 VENDOR = {}
@@ -135,7 +191,7 @@ INSIGHTS = []
 for _a in ALERTS:
     _eq, _kind = _a.get("equipment_id", ""), _a.get("type", "")
     _ref = _a["id"].split("-", 1)[-1]
-    _node = _ref if _kind == "late_delivery" else _eq
+    _node = _eq if _kind == "reality_delta" else _ref
     _m = re.search(r"CL-[\d.]+\d", _a.get("detail", ""))
     _anc = sorted(x for x in (nx.ancestors(G, _eq) if _eq in G else ()) if NODES[x][0] == "Clause")
     _clause = _m.group(0) if _m else (SUB_CLAUSE.get(_eq) or (_anc[0] if _anc else None))
@@ -163,13 +219,11 @@ def impact(node):
 
 
 def simulate(node, delay, n=1000):
-    """Monte Carlo on one delayed delivery. Simulation-based estimate, not a prediction."""
-    if delay <= 0:
-        return dict(median=0.0, p10=0.0, p90=0.0, prob=0.0)
-    x = np.random.default_rng(42).triangular(delay * 0.5, delay, delay * 1.4, n) - SLACK.get(node, 0)
-    x = np.maximum(0, x)
-    return dict(median=float(np.median(x)), p10=float(np.percentile(x, 10)),
-                p90=float(np.percentile(x, 90)), prob=float((x > BUFFER_DAYS).mean()))
+    """Day 4: Monte Carlo through the real schedule (src/graph/blast.py). A simulation-based estimate."""
+    if SCHEDULE_OK and delay > 0 and node in SG and SG.nodes[node].get("type") == "PO":
+        r = _blast.simulate_delay(SG, node, delay, runs=n, buffer_days=BUFFER_DAYS)
+        return dict(median=r["median"], p10=r["p10"], p90=r["p90"], prob=r["prob_miss"])
+    return dict(median=0.0, p10=0.0, p90=0.0, prob=0.0)
 
 
 def gap_clauses():
@@ -212,6 +266,31 @@ def insight_days(i):
     return i["days"] if i["days"] is not None else round(simulate(i["node"], st.session_state.delay)["median"])
 
 
+# day-5 approvals: decisions are stored in SQLite and reloaded at start-up
+def load_decisions():
+    """Latest decision per (kind, item_id), oldest first so a later row wins."""
+    if not DB.exists():
+        return {}
+    try:
+        with sqlite3.connect(DB) as c:
+            rows = c.execute("SELECT kind, item_id, decision FROM decisions ORDER BY rowid").fetchall()
+    except sqlite3.Error:  # table not created yet
+        return {}
+    return {(k, i): d for k, i, d in rows}
+
+
+def decision_log(limit=25):
+    if not DB.exists():
+        return pd.DataFrame(columns=["Time", "Type", "Item", "Decision"])
+    try:
+        with sqlite3.connect(DB) as c:
+            rows = c.execute("SELECT ts, kind, item_id, decision FROM decisions ORDER BY rowid DESC LIMIT ?",
+                             (limit,)).fetchall()
+    except sqlite3.Error:
+        rows = []
+    return pd.DataFrame(rows, columns=["Time", "Type", "Item", "Decision"])
+
+
 def log_decision(kind, item_id, decision):
     DB.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(DB) as c:
@@ -236,11 +315,19 @@ def reset():
 
 
 def answer(q):
+    live = None
     try:
-        from src.ai.qa import answer as live  # Member B: should return dict(text, cites, evidence)
-        return live(q)
-    except ImportError:
+        from src.ai.qa import answer as _live  # Member B: dict(text, cites, evidence), never raises
+        live = _live(q)
+    except Exception:
         pass
+    if live and live.get("cites"):
+        return live
+    local = _answer_local(q)  # built-in answers for the demo questions
+    return local if (local.get("cites") or not live) else live
+
+
+def _answer_local(q):
     ql, delay = q.lower(), st.session_state.delay
     dev = next((i for i in INSIGHTS if i["id"].startswith("DEV-")), None)
     late = next((i for i in INSIGHTS if i["id"].startswith("LATE-")), None)
@@ -253,7 +340,7 @@ def answer(q):
         imp, sim = impact(late["node"]), simulate(late["node"], delay)
         return dict(text=f"A **{delay}-day** delay on {late['node']} affects **{len(imp['tests'])}** tests and "
                          f"**{len(imp['tasks'])}** tasks and pushes handover by about **{sim['median']:.0f} days** "
-                         f"(placeholder estimate, range {sim['p10']:.0f}-{sim['p90']:.0f}).",
+                         f"(simulation-based estimate, range {sim['p10']:.0f}-{sim['p90']:.0f}).",
                     cites=[c for c in late["ids"] if c in G])
     if "test" in ql or "clause" in ql or "gap" in ql:
         g = gap_clauses()
@@ -452,11 +539,14 @@ def to_word(rows):
 # ----------------------------------------------------------------------------- pages
 def overview():
     s = st.session_state
+    if not CLAUSES or not EQUIP:
+        st.warning('No project data found. Put equipment.csv, pos.csv, submittals.csv, tasks.csv and '
+                   'spec_ground_truth.csv in the data folder (or run make_standin_data.py for test data).')
     sim = simulate(FOCUS, s.delay)
     open_i = open_insights()
     crit = sum(i["sev"] == "Critical" for i in open_i)
     gaps = gap_clauses()
-    cov = 1 - len(gaps) / sum(v[0] == "Clause" for v in NODES.values())
+    cov = 1 - len(gaps) / max(1, sum(v[0] == "Clause" for v in NODES.values()))
     stat = [test_status(t) for t in TESTS]
     appr = stat.count("Approved")
     pct = appr / max(len(TESTS), 1)
@@ -466,14 +556,14 @@ def overview():
         a, b = st.columns([8, 1.5], vertical_alignment="center")
         H(f'<div class="hl"><div class="shield">🛡️</div><div><div class="ht">Project Health</div><div class="hs">'
           f'Handover {state}: +{sim["median"]:.0f} days, {sim["prob"]:.0%} chance of missing target date. '
-          f'Main driver: {FOCUS} (delay figures are placeholders until the Day 4 model).</div></div></div>', a)
+          f'Main driver: {FOCUS} (delay figures are simulation-based estimates).</div></div></div>', a)
         b.button("View Details  →", key="vd", on_click=go, args=("Insights",), use_container_width=True)
     bar = f'<div class="bar"><b><i style="width:{pct:.0%}"></i></b>{pct:.0%}</div>'
     H('<div class="kpis">'
       + kpi("red", "⚠️", "Open Deviations", len(open_i), f"↑ {crit} critical", "t-red")
       + kpi("green", "📋", "Spec Coverage", f"{cov:.0%}" if TESTS else "-", f"{len(gaps)} clauses without a test" if TESTS else "no tests yet (waiting for Member B)", "t-green" if not gaps else "t-amber")
       + kpi("blue", "🧪", "Tests Approved", f"{appr} / {len(TESTS)}", "no tests yet (waiting for Member B)" if not TESTS else "", "t-muted", bar)
-      + kpi("amber", "⏱️", "Delay (placeholder)", f"+{sim['median']:.0f} days", f"range {sim['p10']:.0f}-{sim['p90']:.0f} d, demo estimate", "t-muted")
+      + kpi("amber", "⏱️", "Projected Delay", f"+{sim['median']:.0f} days", f"range {sim['p10']:.0f}-{sim['p90']:.0f} d, simulation-based", "t-muted")
       + kpi("", "🖼️", "Photos for Review", review, f"↑ {review} flagged" if review else "none open", "t-amber") + '</div>')
     left, right = st.columns(2)
     with left, st.container(key="panel_risks"):
@@ -497,9 +587,18 @@ def overview():
           '<span style="color:var(--red)">●</span> Rejected</div>' + chart_svg(df))
     H(f'<div style="font-size:12px;color:var(--muted);margin-top:12px"><span style="color:var(--green)">●</span> Live Data • '
       f'Auto Refresh: 30s &nbsp; Last updated {now_str()}</div>')
+    with st.expander("🧾 Decision log (saved to SQLite)"):
+        _log = decision_log()
+        if _log.empty:
+            st.caption("No approvals or rejections yet.")
+        else:
+            st.dataframe(_log, hide_index=True, use_container_width=True)
 
 
 def insights():
+    if not INSIGHTS:
+        st.info('No project data found. Put equipment.csv, pos.csv, submittals.csv, tasks.csv and spec_ground_truth.csv in the data folder (or run make_standin_data.py for test data).')
+        return
     cnt = Counter(i["vendor"] for i in INSIGHTS)
     top, n = cnt.most_common(1)[0]
     H(f'<div class="strip">🔽 &nbsp;<b>{n} of {len(INSIGHTS)} deviations come from the same vendor ({top})</b></div>')
@@ -576,6 +675,9 @@ def graph_svg(blast, focus):
 def graph():
     s = st.session_state
     focus = s.focus if s.focus in G else FOCUS
+    if focus not in NODES:
+        st.info('No project data found. Put equipment.csv, pos.csv, submittals.csv, tasks.csv and spec_ground_truth.csv in the data folder (or run make_standin_data.py for test data).')
+        return
     left, right = st.columns([3.2, 1.15])
     with left, st.container(key="panel_graph"):
         a, b = st.columns([3, 2], vertical_alignment="center")
@@ -621,9 +723,10 @@ def tests():
     H(f'<div class="rs">Level {s.level} · Tier {s.tier} · {len(rows)} tests · {sum(r["status"] == "Approved" for r in rows)} approved</div>', c[1])
     matrix = pd.DataFrame([dict(Clause=t["clause"], Test=t["id"], Level=t["level"], Tier=t["tier"], Status=test_status(t),
                                 SignOff=s.decisions.get(("test", t["id"]), "")) for t in TESTS])
-    c[3].download_button("⬇ Traceability matrix (Excel)", to_excel(matrix), "traceability_matrix.xlsx", use_container_width=True)
+    c[3].download_button("⬇ Traceability matrix (Excel)", (build_traceability_xlsx(TESTS, {t["id"]: s.decisions[("test", t["id"])] for t in TESTS if ("test", t["id"]) in s.decisions}, gaps)
+                                           if build_traceability_xlsx else to_excel(matrix)), "traceability_matrix.xlsx", use_container_width=True)
     try:
-        c[4].download_button("⬇ Test package (Word)", to_word(rows or TESTS), "test_package.docx", use_container_width=True)
+        c[4].download_button("⬇ Test package (Word)", (build_test_package_docx(rows or TESTS) if build_test_package_docx else to_word(rows or TESTS)), "test_package.docx", use_container_width=True)
     except ImportError:
         c[4].caption("Install python-docx for Word export")
     kind = {"Approved": "green", "Draft": "gray", "Rejected": "red", "Blocked": "amber"}
@@ -788,6 +891,9 @@ def ask():
 # ----------------------------------------------------------------------------- shell
 for k, v in dict(page="Overview", focus=FOCUS, decisions={}, chat=[], delay=12, level="L4", tier="III", system="All", dark=False).items():
     st.session_state.setdefault(k, v)
+if not st.session_state.get("_dec_loaded"):  # first run of this browser session
+    st.session_state.decisions.update(load_decisions())
+    st.session_state._dec_loaded = True
 inject_css()
 
 with st.container(key="topbar"):
@@ -808,7 +914,7 @@ with st.sidebar:
     st.radio("System", ["Power", "Cooling", "All"], horizontal=True, key="system", label_visibility="collapsed")
     H('<div style="height:10px"></div>')
     with st.container(key="panel_sim"):
-        H('<div class="sht">⚙️ Simulate change</div><div class="shs">Delay chiller delivery (days)</div>')
+        H(f'<div class="sht">⚙️ Simulate change</div><div class="shs">Delay {FOCUS} delivery (days)</div>')
         x = st.columns([3.6, 1.4], vertical_alignment="center")
         x[0].slider("Delay", 0, 30, key="delay", label_visibility="collapsed")
         H(f'<div class="badge">+{st.session_state.delay}</div>', x[1])
