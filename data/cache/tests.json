@@ -1,0 +1,301 @@
+[
+  {
+    "clause_id": "CL-4.1",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-SWG-01",
+    "steps": [
+      "Review the manufacturer's technical data sheet for switchgear SWG-01.",
+      "Visually inspect the physical nameplate on the main busbar section of the switchgear."
+    ],
+    "instruments": [
+      "Manufacturer Data Sheet",
+      "Equipment Nameplate"
+    ],
+    "acceptance": "The documented and physical busbar rating is 4000 A or greater.",
+    "reason": "This test belongs to Level 1 as it involves verifying component specifications and physical nameplate data before installation and functional testing.",
+    "status": "planned",
+    "id": "T-L1-001"
+  },
+  {
+    "clause_id": "CL-4.2",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-UPS-02",
+    "steps": [
+      "Examine the factory test reports for UPS-02.",
+      "Verify the output capacity rating listed on the UPS module's identification plate."
+    ],
+    "instruments": [
+      "Factory Acceptance Test (FAT) Report",
+      "Equipment Nameplate"
+    ],
+    "acceptance": "The rated output is confirmed to be at least 500 kW.",
+    "reason": "Level 1 verification focus is on confirming that the individual equipment delivered matches the procurement and design specifications.",
+    "status": "planned",
+    "id": "T-L1-002"
+  },
+  {
+    "clause_id": "CL-4.5",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-GEN-01",
+    "steps": [
+      "Locate the manufacturer's nameplate on the GEN-01 alternator or enclosure.",
+      "Cross-reference the standby power rating with the approved submittal documentation."
+    ],
+    "instruments": [
+      "Approved Submittal Documentation",
+      "Equipment Nameplate"
+    ],
+    "acceptance": "The nameplate confirms a standby rating of 1500 kW or greater.",
+    "reason": "This test is categorized as Level 1 as it verifies the static capacity rating provided by the manufacturer.",
+    "status": "planned",
+    "id": "T-L1-003"
+  },
+  {
+    "clause_id": "CL-4.7",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-GEN-01",
+    "steps": [
+      "Retrieve the manufacturer data sheet for the generator to determine fuel consumption rate at 100% load.",
+      "Inspect the fuel storage tank nameplate or shop drawings to confirm total usable capacity.",
+      "Calculate total runtime by dividing usable capacity by the full-load consumption rate."
+    ],
+    "instruments": [
+      "Manufacturer technical specifications",
+      "Design submittals"
+    ],
+    "acceptance": "The calculated runtime at full load must be at least 48 hours.",
+    "reason": "This test belongs to Level 1 because it involves a review of design documentation and technical specifications to ensure capacity requirements are met.",
+    "status": "planned",
+    "id": "T-L1-004"
+  },
+  {
+    "clause_id": "CL-4.9",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-ATS-01",
+    "steps": [
+      "Inspect the physical nameplate of the ATS-01 unit installed on-site.",
+      "Cross-reference the nameplate data with the approved equipment submittals and electrical single-line diagrams."
+    ],
+    "instruments": [
+      "Equipment nameplate",
+      "Approved submittal documentation"
+    ],
+    "acceptance": "The ATS must have a continuous current rating of 2000 A or higher.",
+    "reason": "This test is categorized as Level 1 because it confirms the static equipment ratings against the design requirements through document and visual verification.",
+    "status": "planned",
+    "id": "T-L1-005"
+  },
+  {
+    "clause_id": "CL-4.10",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-BRK-05",
+    "steps": [
+      "Perform a visual inspection of the circuit breaker BRK-05 faceplate to identify the trip unit or frame rating.",
+      "Verify that the installed rating matches the specification provided in the electrical schedule."
+    ],
+    "instruments": [
+      "Visual inspection",
+      "Electrical design schedule"
+    ],
+    "acceptance": "The circuit breaker must be rated for exactly 630 A.",
+    "reason": "This test belongs to Level 1 because it verifies that the specific component provided matches the design criteria through simple inspection and documentation review.",
+    "status": "planned",
+    "id": "T-L1-006"
+  },
+  {
+    "clause_id": "CL-4.11",
+    "level": "L1",
+    "tier": "III",
+    "system": "power",
+    "equipment_id": "EQ-BRK-05",
+    "steps": [
+      "Review the manufacturer's short-circuit test certification for BRK-05.",
+      "Submit the breaker to a third-party laboratory for high-current injection testing at 50 kA.",
+      "Inspect the breaker contacts and casing for structural integrity after the trip event."
+    ],
+    "instruments": [
+      "High-current injection test set",
+      "Digital storage oscilloscope"
+    ],
+    "acceptance": "The breaker successfully interrupts a 50 kA fault current without sustaining external damage or failure.",
+    "reason": "This test verifies the physical design rating of a standalone component at the equipment level prior to installation.",
+    "status": "planned",
+    "id": "T-L1-007"
+  },
+  {
+    "clause_id": "CL-5.1",
+    "level": "L1",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-CHL-01",
+    "steps": [
+      "Run CHL-01 in a controlled factory test environment at full load conditions.",
+      "Measure the chilled water flow rate and the temperature difference between the inlet and outlet.",
+      "Calculate the total cooling capacity in kW based on the measured thermal data."
+    ],
+    "instruments": [
+      "Ultrasonic flow meter",
+      "Calibrated immersion temperature sensors",
+      "Data logger"
+    ],
+    "acceptance": "The calculated cooling capacity is at least 1200 kW.",
+    "reason": "This test confirms that the specialized equipment meets its specific performance ratings at the manufacturer's facility.",
+    "status": "planned",
+    "id": "T-L1-008"
+  },
+  {
+    "clause_id": "CL-5.2",
+    "level": "L4",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-CHL-01",
+    "steps": [
+      "Operate the chiller at 100% cooling load for a minimum of 30 minutes.",
+      "Record the electrical power input (kW) using the power meter.",
+      "Calculate cooling output using the measured chilled water flow and temperature differential.",
+      "Divide the cooling output by the power input to determine the COP."
+    ],
+    "instruments": [
+      "Calibrated power meter",
+      "Ultrasonic flow meter",
+      "Immersion temperature sensors"
+    ],
+    "acceptance": "The calculated Coefficient of Performance (COP) must be 5.5 or higher.",
+    "reason": "This test verifies the actual operational efficiency of the equipment under load, which is characteristic of Level 4 functional performance testing.",
+    "status": "planned",
+    "id": "T-L4-005"
+  },
+  {
+    "clause_id": "CL-5.5",
+    "level": "L1",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-PMP-01",
+    "steps": [
+      "Locate the manufacturer's technical data sheet for PMP-01.",
+      "Identify the rated pump head value provided in the certified submittal.",
+      "Confirm the head rating matches or exceeds the required specification."
+    ],
+    "instruments": [
+      "Manufacturer technical datasheet",
+      "Approved submittal documents"
+    ],
+    "acceptance": "The documented rated head must be 30 m or higher.",
+    "reason": "Verification of equipment ratings through design documentation and manufacturer data occurs at Level 1.",
+    "status": "planned",
+    "id": "T-L1-009"
+  },
+  {
+    "clause_id": "CL-5.6",
+    "level": "L1",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-CT-01",
+    "steps": [
+      "Examine the physical nameplate on cooling tower CT-01.",
+      "Cross-reference the nameplate data with the factory test report provided by the supplier.",
+      "Confirm that the heat rejection capacity is clearly stated."
+    ],
+    "instruments": [
+      "Equipment nameplate",
+      "Factory test report"
+    ],
+    "acceptance": "The nameplate or factory test report must show a heat rejection capacity of at least 1500 kW.",
+    "reason": "This test validates the specified design capacity of the component at the procurement and factory documentation level.",
+    "status": "planned",
+    "id": "T-L1-010"
+  },
+  {
+    "clause_id": "CL-5.7",
+    "level": "L1",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-CRAH-01",
+    "steps": [
+      "Obtain the technical specification sheet for CRAH-01 from the manufacturer.",
+      "Verify the rated total cooling capacity under design operating conditions."
+    ],
+    "instruments": [
+      "Manufacturer data sheets",
+      "Design specifications"
+    ],
+    "acceptance": "The documented cooling capacity of CRAH-01 is 100 kW or greater.",
+    "reason": "Level 1 testing focuses on the verification of equipment specifications and factory-provided documentation before installation.",
+    "status": "planned",
+    "id": "T-L1-011"
+  },
+  {
+    "clause_id": "CL-5.9",
+    "level": "L5",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-CHL-01",
+    "steps": [
+      "Run the cooling plant at its maximum required facility load.",
+      "Manually shut down one operational chiller (CHL-01) to simulate a failure.",
+      "Monitor the remaining chillers to ensure they pick up the load without a loss in cooling capacity."
+    ],
+    "instruments": [
+      "BMS monitoring station",
+      "Flow meters",
+      "Temperature sensors"
+    ],
+    "acceptance": "The cooling plant maintains 100% of the required cooling load after the standby chiller takes over.",
+    "reason": "Level 5 testing involves integrated system testing to verify that the redundant components function together as a system.",
+    "status": "planned",
+    "id": "T-L5-003"
+  },
+  {
+    "clause_id": "CL-5.10",
+    "level": "L5",
+    "tier": "III",
+    "system": "cooling",
+    "equipment_id": "EQ-CHL-01",
+    "steps": [
+      "Initiate a simulated utility power failure to trigger a transfer to generator power.",
+      "Start a stopwatch the moment the Automatic Transfer Switch (ATS) completes the transfer to the generator.",
+      "Stop the timer when CHL-01 confirms compressor restart and begins active cooling."
+    ],
+    "instruments": [
+      "Stopwatch",
+      "BMS event log"
+    ],
+    "acceptance": "The time elapsed from power transfer to cooling resumption is 120 seconds or less.",
+    "reason": "Level 5 testing validates the interoperability of the electrical and cooling systems during a site-wide power transition.",
+    "status": "planned",
+    "id": "T-L5-004"
+  },
+  {
+    "clause_id": "CL-5.11",
+    "level": "L5",
+    "tier": "IV",
+    "system": "cooling",
+    "equipment_id": "EQ-CHL-01",
+    "steps": [
+      "Apply the full design heat load to the data center using load banks.",
+      "Induce a single point of failure in the cooling distribution path, such as closing a critical valve or tripping a pump breaker.",
+      "Observe if the system maintains the design load without any degradation in cooling performance."
+    ],
+    "instruments": [
+      "Thermal load banks",
+      "BMS telemetry",
+      "Pressure transducers"
+    ],
+    "acceptance": "The cooling capacity remains at 100% of the design load despite the induced single failure.",
+    "reason": "Level 5 is the appropriate stage for verifying Tier IV fault tolerance through comprehensive failure mode testing of the integrated environment.",
+    "status": "planned",
+    "id": "T-L5-005"
+  }
+]
