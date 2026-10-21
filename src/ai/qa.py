@@ -6,10 +6,12 @@ from src.ai.llm import ask_llm_json, ask_llm_text
 
 REQS = Path("data/cache/requirements.json")
 TESTS = Path("data/cache/tests.json")
+QA_CACHE = Path("data/cache/qa_cache.json")
 
 CLAUSE_RE = re.compile(r"\bCL-\d+(?:\.\d+)*\b", re.IGNORECASE)
 EQUIP_RE = re.compile(r"\bEQ-[A-Z0-9]+(?:-[A-Z0-9]+)*\b", re.IGNORECASE)
-CITE_RE = re.compile(r"CL-\d+(?:\.\d+)*")
+CITE_RE = re.compile(r"\b(?:CL-\d+(?:\.\d+)*|EQ-[A-Z0-9]+(?:-[A-Z0-9]+)*|T-L\d-\d{3}|SUB-\d+|PO-\d+|TASK-\d+|PH-\d+)\b")
+UNAVAILABLE = "The answer service is unavailable right now"
 
 
 def load_index():
@@ -27,7 +29,6 @@ def load_index():
 
 
 def find_entities_offline(question, clauses, equipment):
-    """No API needed: exact IDs first, then equipment names such as 'SWG-01'."""
     found = set()
     for m in CLAUSE_RE.findall(question):
         if m.upper() in clauses:
@@ -43,7 +44,6 @@ def find_entities_offline(question, clauses, equipment):
 
 
 def pick_entities_llm(question, clauses, equipment):
-    """LLM picks the IDs the question is about. Returns None if the call fails."""
     known = sorted(set(clauses) | set(equipment))
     prompt = (
         "Pick the clause IDs and equipment IDs that the question is about.\n"
@@ -54,22 +54,20 @@ def pick_entities_llm(question, clauses, equipment):
     )
     try:
         data = ask_llm_json(prompt, max_tokens=500)
-    except Exception as e:
-        print(f"note: entity picking used offline matching instead ({str(e)[:80]})")
+    except Exception:
         return None
     ids = data.get("ids", []) if isinstance(data, dict) else data
     return {i for i in ids if i in clauses or i in equipment}
 
 
 def connected(entity_ids, clauses, equipment, tests_by_clause):
-    """Stand-in for the graph query: clauses, the equipment they require, and their tests."""
+    """Stand-in for the graph query. Replace with Member A's graph query when available."""
     clause_ids = set()
     for e in entity_ids:
         if e in clauses:
             clause_ids.add(e)
         elif e in equipment:
             clause_ids.update(equipment[e])
-
     nodes = []
     for cid in sorted(clause_ids):
         r = clauses[cid]
@@ -86,20 +84,43 @@ def connected(entity_ids, clauses, equipment, tests_by_clause):
     return nodes
 
 
-def answer(question, use_llm=True, dry_run=False):
-    clauses, equipment, tests_by_clause = load_index()
+def clauses_without_tests():
+    clauses, _, tests_by_clause = load_index()
+    missing = [cid for cid in sorted(clauses) if not tests_by_clause.get(cid)]
+    text = (f"{len(missing)} clauses have no accepted test: {', '.join(missing)}. "
+            "Their drafted tests were rejected by the level rules, because the "
+            "lower-level test for the same equipment or system is missing.")
+    return {"text": text, "cites": missing,
+            "evidence": [{"type": "Clause", "id": c} for c in missing]}
 
-    entities = pick_entities_llm(question, clauses, equipment) if use_llm else None
-    if not entities:
-        entities = find_entities_offline(question, clauses, equipment)
 
-    nodes = connected(entities, clauses, equipment, tests_by_clause)
-    if not nodes:
-        return {"answer": "No matching clauses found for that question.",
-                "citations": [], "entities": sorted(entities), "context": []}
+def _key(question):
+    return " ".join(question.lower().split())
 
-    prompt = f"""Answer the question using ONLY the context below.
-Cite every fact with its clause ID in square brackets, for example [CL-4.1].
+
+def _load_cache():
+    return json.loads(QA_CACHE.read_text()) if QA_CACHE.exists() else {}
+
+
+def answer(question):
+    """App contract: returns dict(text, cites, evidence). Never raises."""
+    try:
+        if "no test" in question.lower():
+            return clauses_without_tests()
+        cache = _load_cache()
+        if _key(question) in cache:
+            return cache[_key(question)]
+
+        clauses, equipment, tests_by_clause = load_index()
+        entities = (pick_entities_llm(question, clauses, equipment)
+                    or find_entities_offline(question, clauses, equipment))
+        nodes = connected(entities, clauses, equipment, tests_by_clause)
+        if not nodes:
+            return {"text": "No matching clauses or equipment found for that question.",
+                    "cites": [], "evidence": []}
+
+        prompt = f"""Answer the question using ONLY the context below.
+Cite every fact with its ID in square brackets, for example [CL-4.1].
 If the context does not contain the answer, say so.
 
 Context (graph nodes, JSON):
@@ -107,11 +128,10 @@ Context (graph nodes, JSON):
 
 Question: {question}
 """
-    if dry_run:
-        return {"answer": "(dry run: no model call)", "citations": [],
-                "entities": sorted(entities), "context": nodes, "prompt": prompt}
-
-    text = ask_llm_text(prompt, max_tokens=1000)
-    citations = sorted(set(CITE_RE.findall(text)))
-    return {"answer": text, "citations": citations,
-            "entities": sorted(entities), "context": nodes}
+        text = ask_llm_text(prompt, max_tokens=1000)
+        known = {n["id"] for n in nodes} | {n["equipment_id"] for n in nodes if n.get("equipment_id")}
+        cites = sorted({m for m in CITE_RE.findall(text) if m in known})
+        return {"text": text, "cites": cites, "evidence": nodes}
+    except Exception as e:
+        return {"text": f"{UNAVAILABLE} ({str(e)[:120]}). Try again later.",
+                "cites": [], "evidence": []}

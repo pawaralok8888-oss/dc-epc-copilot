@@ -51,7 +51,7 @@ for start in range(0, len(todo), BATCH):
             "instruments": d.get("instruments", []),
             "acceptance": d.get("acceptance", ""),
             "reason": d.get("reason", ""),
-            "status": "planned",
+            "status": "Draft",
         }
     save_progress()
     print(f"batch {start // BATCH + 1}: saved {len(done)} of {len(reqs)}")

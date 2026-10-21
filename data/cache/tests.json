@@ -15,7 +15,7 @@
     ],
     "acceptance": "The documented and physical busbar rating is 4000 A or greater.",
     "reason": "This test belongs to Level 1 as it involves verifying component specifications and physical nameplate data before installation and functional testing.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-001"
   },
   {
@@ -34,7 +34,7 @@
     ],
     "acceptance": "The rated output is confirmed to be at least 500 kW.",
     "reason": "Level 1 verification focus is on confirming that the individual equipment delivered matches the procurement and design specifications.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-002"
   },
   {
@@ -53,7 +53,7 @@
     ],
     "acceptance": "The nameplate confirms a standby rating of 1500 kW or greater.",
     "reason": "This test is categorized as Level 1 as it verifies the static capacity rating provided by the manufacturer.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-003"
   },
   {
@@ -73,7 +73,7 @@
     ],
     "acceptance": "The calculated runtime at full load must be at least 48 hours.",
     "reason": "This test belongs to Level 1 because it involves a review of design documentation and technical specifications to ensure capacity requirements are met.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-004"
   },
   {
@@ -92,7 +92,7 @@
     ],
     "acceptance": "The ATS must have a continuous current rating of 2000 A or higher.",
     "reason": "This test is categorized as Level 1 because it confirms the static equipment ratings against the design requirements through document and visual verification.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-005"
   },
   {
@@ -111,7 +111,7 @@
     ],
     "acceptance": "The circuit breaker must be rated for exactly 630 A.",
     "reason": "This test belongs to Level 1 because it verifies that the specific component provided matches the design criteria through simple inspection and documentation review.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-006"
   },
   {
@@ -131,7 +131,7 @@
     ],
     "acceptance": "The breaker successfully interrupts a 50 kA fault current without sustaining external damage or failure.",
     "reason": "This test verifies the physical design rating of a standalone component at the equipment level prior to installation.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-007"
   },
   {
@@ -152,7 +152,7 @@
     ],
     "acceptance": "The calculated cooling capacity is at least 1200 kW.",
     "reason": "This test confirms that the specialized equipment meets its specific performance ratings at the manufacturer's facility.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-008"
   },
   {
@@ -174,7 +174,7 @@
     ],
     "acceptance": "The calculated Coefficient of Performance (COP) must be 5.5 or higher.",
     "reason": "This test verifies the actual operational efficiency of the equipment under load, which is characteristic of Level 4 functional performance testing.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L4-005"
   },
   {
@@ -194,7 +194,7 @@
     ],
     "acceptance": "The documented rated head must be 30 m or higher.",
     "reason": "Verification of equipment ratings through design documentation and manufacturer data occurs at Level 1.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-009"
   },
   {
@@ -214,7 +214,7 @@
     ],
     "acceptance": "The nameplate or factory test report must show a heat rejection capacity of at least 1500 kW.",
     "reason": "This test validates the specified design capacity of the component at the procurement and factory documentation level.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-010"
   },
   {
@@ -233,7 +233,7 @@
     ],
     "acceptance": "The documented cooling capacity of CRAH-01 is 100 kW or greater.",
     "reason": "Level 1 testing focuses on the verification of equipment specifications and factory-provided documentation before installation.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L1-011"
   },
   {
@@ -254,7 +254,7 @@
     ],
     "acceptance": "The cooling plant maintains 100% of the required cooling load after the standby chiller takes over.",
     "reason": "Level 5 testing involves integrated system testing to verify that the redundant components function together as a system.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L5-003"
   },
   {
@@ -274,7 +274,7 @@
     ],
     "acceptance": "The time elapsed from power transfer to cooling resumption is 120 seconds or less.",
     "reason": "Level 5 testing validates the interoperability of the electrical and cooling systems during a site-wide power transition.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L5-004"
   },
   {
@@ -295,7 +295,7 @@
     ],
     "acceptance": "The cooling capacity remains at 100% of the design load despite the induced single failure.",
     "reason": "Level 5 is the appropriate stage for verifying Tier IV fault tolerance through comprehensive failure mode testing of the integrated environment.",
-    "status": "planned",
+    "status": "Draft",
     "id": "T-L5-005"
   }
 ]
