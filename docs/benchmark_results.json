@@ -1,0 +1,35 @@
+{
+  "generated": "2026-10-22T18:00:19",
+  "repeats": 20,
+  "timings": {
+    "test_package": {
+      "median_s": 0.12302546399951098,
+      "min_s": 0.11613871300141909,
+      "max_s": 0.22412162500040722,
+      "runs": 20,
+      "note": "from cached AI results",
+      "extra_s": 0.0
+    },
+    "blast_radius": {
+      "median_s": 0.005409950499597471,
+      "min_s": 0.004972000002453569,
+      "max_s": 0.006616299997403985,
+      "runs": 20,
+      "note": "blast radius + 1,000-run delay simulation"
+    },
+    "deviation_check": {
+      "median_s": 8.110000089800451e-05,
+      "min_s": 7.710000136285089e-05,
+      "max_s": 0.0006272999999055173,
+      "runs": 20,
+      "note": "all submittals vs all clauses"
+    },
+    "nameplate_check": {
+      "median_s": 0.001479099999414757,
+      "min_s": 0.0008319000007759314,
+      "max_s": 0.002781800001685042,
+      "runs": 20,
+      "note": "from cached vision results"
+    }
+  }
+}
