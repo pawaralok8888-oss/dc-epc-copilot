@@ -9,6 +9,9 @@ the target is affected. So the graph is a directed acyclic graph (DAG):
     PO        -> Task           (GATES: the delivery task waits for the PO)
     Task      -> Task           (PRECEDES: a prerequisite points to the task that
                                  depends on it, the OPPOSITE of the depends_on column)
+    Clause    -> Test           (VERIFIED_BY)       } only if data/cache/tests.json exists
+    Equipment -> Test           (TESTED_BY)         } (Member B writes it); a test is also
+    Task      -> Test           (SCHEDULED_AS)      } placed in the task where it is run
 
 Submittal.clause_id is kept as a node attribute, not an edge, because an edge
 back to the clause would create a loop.
@@ -17,11 +20,13 @@ Run:  python3 src/graph/build_graph.py
 Test: python3 -m pytest tests/ -v
 """
 import csv
+import json
 from pathlib import Path
 
 import networkx as nx
 
 DATA = Path(__file__).resolve().parents[2] / "data"
+TESTS_PATH = DATA / "cache" / "tests.json"
 
 # columns that should be numbers instead of text
 FLOAT_FIELDS = {"value", "rating_value"}
@@ -62,8 +67,67 @@ def _add_edge(G, source, target, relation):
     G.add_edge(source, target, relation=relation)
 
 
-def build_graph():
-    """Read all CSV files and return the project graph (a networkx DiGraph)."""
+# ------------------------------------------------------------------ tests
+LEVELS = ["L1", "L2", "L3", "L4", "L5"]
+# how to recognise the task where a test of each level is run (by task name)
+LEVEL_MARKER = {"L2": "installation", "L3": "(L3)", "L4": "(L4)", "L5": "(L5)"}
+
+
+def load_tests(path=TESTS_PATH):
+    """List of test dicts from tests.json, or [] if the file does not exist yet."""
+    if not Path(path).exists():
+        return []
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return data["tests"] if isinstance(data, dict) and "tests" in data else data
+
+
+def _scheduled_task(G, order, equipment_id, level):
+    """The task in which a test of this level on this equipment is run.
+
+    L1 = the equipment's delivery task. Other levels = the earliest task after that
+    delivery whose name fits the level (installation, (L3), (L4), (L5)). If there is no
+    such task at the level, the next higher level is tried. Returns None if nothing fits.
+    """
+    deliveries = [t for po in G.successors(equipment_id) if G.nodes[po]["kind"] == "PO"
+                  for t in G.successors(po) if G.nodes[t]["kind"] == "Task"]
+    if not deliveries:
+        return None
+    delivery = deliveries[0]
+    if level == "L1":
+        return delivery
+    later = [t for t in nx.descendants(G, delivery) if G.nodes[t]["kind"] == "Task"]
+    for lv in LEVELS[LEVELS.index(level):]:
+        marker = LEVEL_MARKER.get(lv)
+        found = [t for t in later if marker and marker.lower() in G.nodes[t]["name"].lower()]
+        if found:
+            return min(found, key=order.get)
+    return None
+
+
+def _add_tests(G, tests):
+    """Add Test nodes and their edges. Tests with unknown IDs are skipped, not fatal."""
+    order = {n: i for i, n in enumerate(nx.topological_sort(G))}
+    skipped = []
+    for t in tests:
+        tid, cid, eq, level = t.get("id"), t.get("clause_id"), t.get("equipment_id"), t.get("level")
+        if not tid or cid not in G or G.nodes[cid]["kind"] != "Clause":
+            skipped.append((tid, f"unknown clause {cid}"))
+            continue
+        attrs = {k: t[k] for k in ("level", "tier", "system", "acceptance", "reason", "status",
+                                  "steps", "instruments") if k in t}
+        G.add_node(tid, kind="Test", label=f"{tid} test for {cid}", clause_id=cid,
+                   equipment_id=eq, **attrs)
+        G.add_edge(cid, tid, relation="VERIFIED_BY")
+        if eq in G and G.nodes[eq]["kind"] == "Equipment":
+            G.add_edge(eq, tid, relation="TESTED_BY")
+            task = _scheduled_task(G, order, eq, level) if level in LEVELS else None
+            if task:
+                G.add_edge(task, tid, relation="SCHEDULED_AS")
+    return skipped
+
+
+def build_graph(tests_path=TESTS_PATH):
+    """Read all CSV files (and tests.json if it exists) and return the project graph (a networkx DiGraph)."""
     G = nx.DiGraph()
 
     clauses = read_csv("spec_ground_truth.csv")
@@ -98,6 +162,9 @@ def build_graph():
             if prerequisite:
                 _add_edge(G, prerequisite, r["task_id"], "PRECEDES")
 
+    # 3. tests written by Member B (optional)
+    G.graph["skipped_tests"] = _add_tests(G, load_tests(tests_path))
+
     return G
 
 
@@ -124,5 +191,7 @@ if __name__ == "__main__":
     print(f"Nodes: {G.number_of_nodes()}")
     print(f"Edges: {G.number_of_edges()}")
     print(f"No loops (DAG): {nx.is_directed_acyclic_graph(G)}")
+    n_tests = sum(1 for _, d in G.nodes(data=True) if d["kind"] == "Test")
+    print(f"Tests in graph: {n_tests} (skipped: {len(G.graph['skipped_tests'])})")
     print_chain(G, "CL-4.2")
     print(f"\nTASK-010 downstream: {sorted(downstream(G, 'TASK-010'))}")
