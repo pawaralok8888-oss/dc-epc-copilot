@@ -13,6 +13,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from src.graph.build_graph import build_graph, downstream  # noqa: E402
 
+
+def tasks_only(G, nodes):
+    return {n for n in nodes if G.nodes[n]["kind"] == "Task"}
+
 CHILLER_CHAIN = {"TASK-011", "TASK-012", "TASK-013", "TASK-014", "TASK-015", "TASK-031"}
 
 
@@ -28,9 +32,9 @@ def test_graph_has_no_loops(G):
 
 def test_chiller_delivery_task_affects_the_cooling_chain(G):
     # if TASK-010 (chiller delivery) slips, exactly these tasks are affected
-    assert downstream(G, "TASK-010") == CHILLER_CHAIN
+    assert tasks_only(G, downstream(G, "TASK-010")) == CHILLER_CHAIN
 
 
 def test_late_chiller_po_affects_delivery_task_and_chain(G):
     # PO-008 is the late chiller PO (planted error 2)
-    assert downstream(G, "PO-008") == CHILLER_CHAIN | {"TASK-010"}
+    assert tasks_only(G, downstream(G, "PO-008")) == CHILLER_CHAIN | {"TASK-010"}
