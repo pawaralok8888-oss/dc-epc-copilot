@@ -1,0 +1,33 @@
+{
+  "_note": "These are OUR OWN estimates of manual effort, not measured data. Edit the numbers if your team disagrees, but keep the 'basis' honest. The pitch must call them estimates.",
+  "tasks": [
+    {
+      "key": "test_package",
+      "task": "Draft a test package and traceability matrix for one system",
+      "manual_hours_low": 16,
+      "manual_hours_high": 24,
+      "basis": "2-3 working days: read ~25 clauses, write a test per requirement (steps, instruments, acceptance), then build the clause-to-test matrix by hand."
+    },
+    {
+      "key": "blast_radius",
+      "task": "Find everything a spec or delivery change affects",
+      "manual_hours_low": 2,
+      "manual_hours_high": 4,
+      "basis": "Search schedule, POs, test list and handover documents by hand for every item linked to the changed equipment, then re-work the dates."
+    },
+    {
+      "key": "deviation_check",
+      "task": "Cross-check all submittals against spec values",
+      "manual_hours_low": 4,
+      "manual_hours_high": 6,
+      "basis": "20 submittals x about 15 minutes each to find the matching clause and compare rating, unit and model."
+    },
+    {
+      "key": "nameplate_check",
+      "task": "Compare nameplate photos with the approved submittals",
+      "manual_hours_low": 0.5,
+      "manual_hours_high": 1,
+      "basis": "10 photos x 3-6 minutes each: read the plate, find the submittal, compare. Manual checks usually happen after installation, so the real saving is catching it earlier."
+    }
+  ]
+}

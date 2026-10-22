@@ -1,0 +1,5 @@
+task,manual_low_h,manual_high_h,system_seconds,hours_saved,speedup
+Draft a test package and traceability matrix for one system,16,24,0.1230,20.00,585245
+Find everything a spec or delivery change affects,2,4,0.0054,3.00,1996321
+Cross-check all submittals against spec values,4,6,0.0001,5.00,221948210
+Compare nameplate photos with the approved submittals,0.5,1,0.0015,0.75,1825434
