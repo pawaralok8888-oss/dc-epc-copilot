@@ -1,0 +1,252 @@
+{
+  "why is the ups flagged?": {
+    "text": "The UPS (EQ-UPS-02) is flagged because submittal SUB-002 (VOLT-UPS-400) declares a capacity of 400 kW, whereas clause CL-4.2 requires a rated capacity of not less than 500 kW [SUB-002]. This leaves the rating 100 kW (20%) below the specification [SUB-002].",
+    "cites": [
+      "CL-4.2",
+      "EQ-UPS-02",
+      "SUB-002"
+    ],
+    "evidence": [
+      {
+        "type": "Clause",
+        "id": "CL-4.2",
+        "title": "UPS rated capacity",
+        "text": "Each UPS module (UPS-02) shall have a rated output of not less than 500 kW.",
+        "value": "500",
+        "unit": "kW",
+        "operator": ">=",
+        "equipment_id": "EQ-UPS-02",
+        "level": "L1",
+        "tier": "III"
+      },
+      {
+        "type": "Test",
+        "id": "T-L1-002",
+        "clause_id": "CL-4.2",
+        "steps": [
+          "Examine the factory test reports for UPS-02.",
+          "Verify the output capacity rating listed on the UPS module's identification plate."
+        ],
+        "acceptance": "The rated output is confirmed to be at least 500 kW."
+      },
+      {
+        "type": "Clause",
+        "id": "CL-4.4",
+        "title": "UPS efficiency",
+        "text": "UPS-02 shall achieve an efficiency of not less than 96 % in double-conversion mode at full load.",
+        "value": "96",
+        "unit": "%",
+        "operator": ">=",
+        "equipment_id": "EQ-UPS-02",
+        "level": "L4",
+        "tier": "III"
+      },
+      {
+        "id": "SUB-002",
+        "kind": "deviation",
+        "title": "EQ-UPS-02 rating below spec",
+        "text": "EQ-UPS-02 (UPS module) is flagged because submittal SUB-002 (VOLT-UPS-400) declares 400 kW, but clause CL-4.2 (UPS rated capacity) requires >= 500 kW. That is 100 kW (20%) below spec. It affects 6 schedule tasks: TASK-009, TASK-015, TASK-017, TASK-028, TASK-030, TASK-031. It also affects 4 tests: T-L1-002, T-L5-003, T-L5-004, T-L5-005.",
+        "links": [
+          "CL-4.2",
+          "EQ-UPS-02"
+        ],
+        "data": {
+          "spec": 500.0,
+          "declared": 400.0,
+          "operator": ">=",
+          "unit": "kW",
+          "gap": 100.0,
+          "tasks": [
+            "TASK-009",
+            "TASK-015",
+            "TASK-017",
+            "TASK-028",
+            "TASK-030",
+            "TASK-031"
+          ],
+          "tests": [
+            "T-L1-002",
+            "T-L5-003",
+            "T-L5-004",
+            "T-L5-005"
+          ]
+        }
+      }
+    ]
+  },
+  "what does the chiller delay affect?": {
+    "text": "Based on the provided context, the delay of PO-008 for EQ-CHL-01 affects 7 schedule tasks (TASK-010, TASK-011, TASK-012, TASK-013, TASK-014, TASK-015, and TASK-031) and 5 tests (T-L1-008, T-L4-005, T-L5-003, T-L5-004, and T-L5-005) [PO-008]. It also causes the planned handover date of 2027-06-22 to move 47 days later to 2027-08-08 [PO-008].",
+    "cites": [
+      "EQ-CHL-01",
+      "PO-008",
+      "T-L1-008",
+      "T-L4-005",
+      "T-L5-003",
+      "T-L5-004",
+      "T-L5-005"
+    ],
+    "evidence": [
+      {
+        "type": "Clause",
+        "id": "CL-5.1",
+        "title": "Chiller cooling capacity",
+        "text": "The water-cooled chiller (CHL-01) shall have a cooling capacity of not less than 1200 kW.",
+        "value": "1200",
+        "unit": "kW",
+        "operator": ">=",
+        "equipment_id": "EQ-CHL-01",
+        "level": "L1",
+        "tier": "III"
+      },
+      {
+        "type": "Test",
+        "id": "T-L1-008",
+        "clause_id": "CL-5.1",
+        "steps": [
+          "Run CHL-01 in a controlled factory test environment at full load conditions.",
+          "Measure the chilled water flow rate and the temperature difference between the inlet and outlet.",
+          "Calculate the total cooling capacity in kW based on the measured thermal data."
+        ],
+        "acceptance": "The calculated cooling capacity is at least 1200 kW."
+      },
+      {
+        "type": "Clause",
+        "id": "CL-5.10",
+        "title": "Cooling restart after transfer",
+        "text": "After a transfer to generator power, CHL-01 shall resume cooling within not more than 120 seconds.",
+        "value": "120",
+        "unit": "s",
+        "operator": "<=",
+        "equipment_id": "EQ-CHL-01",
+        "level": "L5",
+        "tier": "III"
+      },
+      {
+        "type": "Test",
+        "id": "T-L5-004",
+        "clause_id": "CL-5.10",
+        "steps": [
+          "Initiate a simulated utility power failure to trigger a transfer to generator power.",
+          "Start a stopwatch the moment the Automatic Transfer Switch (ATS) completes the transfer to the generator.",
+          "Stop the timer when CHL-01 confirms compressor restart and begins active cooling."
+        ],
+        "acceptance": "The time elapsed from power transfer to cooling resumption is 120 seconds or less."
+      },
+      {
+        "type": "Clause",
+        "id": "CL-5.11",
+        "title": "Cooling fault tolerance",
+        "text": "A single failure in the cooling path shall not reduce available cooling capacity below 100 % of the design load (CHL-01).",
+        "value": "100",
+        "unit": "%",
+        "operator": ">=",
+        "equipment_id": "EQ-CHL-01",
+        "level": "L5",
+        "tier": "IV"
+      },
+      {
+        "type": "Test",
+        "id": "T-L5-005",
+        "clause_id": "CL-5.11",
+        "steps": [
+          "Apply the full design heat load to the data center using load banks.",
+          "Induce a single point of failure in the cooling distribution path, such as closing a critical valve or tripping a pump breaker.",
+          "Observe if the system maintains the design load without any degradation in cooling performance."
+        ],
+        "acceptance": "The cooling capacity remains at 100% of the design load despite the induced single failure."
+      },
+      {
+        "type": "Clause",
+        "id": "CL-5.2",
+        "title": "Chiller efficiency",
+        "text": "CHL-01 shall achieve a coefficient of performance (COP) of not less than 5.5 at full load.",
+        "value": "5.5",
+        "unit": "COP",
+        "operator": ">=",
+        "equipment_id": "EQ-CHL-01",
+        "level": "L4",
+        "tier": "III"
+      },
+      {
+        "type": "Test",
+        "id": "T-L4-005",
+        "clause_id": "CL-5.2",
+        "steps": [
+          "Operate the chiller at 100% cooling load for a minimum of 30 minutes.",
+          "Record the electrical power input (kW) using the power meter.",
+          "Calculate cooling output using the measured chilled water flow and temperature differential.",
+          "Divide the cooling output by the power input to determine the COP."
+        ],
+        "acceptance": "The calculated Coefficient of Performance (COP) must be 5.5 or higher."
+      },
+      {
+        "type": "Clause",
+        "id": "CL-5.3",
+        "title": "Chilled water supply temperature",
+        "text": "CHL-01 shall deliver chilled water at a supply temperature of 18 degC.",
+        "value": "18",
+        "unit": "degC",
+        "operator": "=",
+        "equipment_id": "EQ-CHL-01",
+        "level": "L3",
+        "tier": "III"
+      },
+      {
+        "type": "Clause",
+        "id": "CL-5.9",
+        "title": "Cooling redundancy (N+1)",
+        "text": "The cooling plant shall include not fewer than 1 standby chiller, so that full capacity is maintained when any one chiller is out of service (CHL-01).",
+        "value": "1",
+        "unit": null,
+        "operator": ">=",
+        "equipment_id": "EQ-CHL-01",
+        "level": "L5",
+        "tier": "III"
+      },
+      {
+        "type": "Test",
+        "id": "T-L5-003",
+        "clause_id": "CL-5.9",
+        "steps": [
+          "Run the cooling plant at its maximum required facility load.",
+          "Manually shut down one operational chiller (CHL-01) to simulate a failure.",
+          "Monitor the remaining chillers to ensure they pick up the load without a loss in cooling capacity."
+        ],
+        "acceptance": "The cooling plant maintains 100% of the required cooling load after the standby chiller takes over."
+      },
+      {
+        "id": "PO-008",
+        "kind": "delay",
+        "title": "PO-008 delivery is 47 days late",
+        "text": "PO-008 (ThermoCore Systems) for EQ-CHL-01 (Water-cooled chiller) promises delivery on 2027-06-01, but TASK-010 needs it by 2027-04-15. It is 47 days late. The chiller is on the critical path, so the planned handover date 2027-06-22 moves to 2027-08-08, which is 47 days later. It affects 7 schedule tasks: TASK-010, TASK-011, TASK-012, TASK-013, TASK-014, TASK-015, TASK-031. It also affects 5 tests: T-L1-008, T-L4-005, T-L5-003, T-L5-004, T-L5-005.",
+        "links": [
+          "EQ-CHL-01",
+          "TASK-010"
+        ],
+        "data": {
+          "promised": "2027-06-01",
+          "need_by": "2027-04-15",
+          "days_late": 47,
+          "planned_handover": "2027-06-22",
+          "forecast_handover": "2027-08-08",
+          "tasks": [
+            "TASK-010",
+            "TASK-011",
+            "TASK-012",
+            "TASK-013",
+            "TASK-014",
+            "TASK-015",
+            "TASK-031"
+          ],
+          "tests": [
+            "T-L1-008",
+            "T-L4-005",
+            "T-L5-003",
+            "T-L5-004",
+            "T-L5-005"
+          ]
+        }
+      }
+    ]
+  }
+}
